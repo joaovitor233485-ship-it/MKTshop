@@ -31,6 +31,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
+  double _safeParsePrice(dynamic raw) {
+    if (raw == null) return 280.0;
+    if (raw is num) return raw.toDouble();
+    return double.tryParse(raw.toString()) ?? 280.0;
+  }
+
   Color _getStatusColor(String status) {
     switch (status) {
       case 'completed':
@@ -128,7 +134,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'R\$ ${double.parse(req['price'].toString()).toStringAsFixed(2)}',
+                              'R\$ ${_safeParsePrice(req['price']).toStringAsFixed(2)}',
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF4F46E5)),
                             ),
                             Row(
@@ -153,7 +159,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                         MaterialPageRoute(
                                           builder: (context) => PaymentScreen(
                                             requestId: req['id'] as int,
-                                            amount: double.parse(req['price'].toString()),
+                                            amount: _safeParsePrice(req['price']),
                                           ),
                                         ),
                                       );

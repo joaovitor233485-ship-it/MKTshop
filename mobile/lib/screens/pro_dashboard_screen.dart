@@ -288,6 +288,12 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
     );
   }
 
+  double _safeParsePrice(dynamic raw) {
+    if (raw == null) return 280.0;
+    if (raw is num) return raw.toDouble();
+    return double.tryParse(raw.toString()) ?? 280.0;
+  }
+
   // Feed de Chamados Disponíveis na Região
   Widget _buildAvailableFeed() {
     if (_availableRequests.isEmpty) {
@@ -369,7 +375,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
                       children: [
                         const Text('Valor Estimado', style: TextStyle(fontSize: 11, color: Colors.grey)),
                         Text(
-                          'R\$ ${double.parse(req['price'].toString()).toStringAsFixed(2)}',
+                          'R\$ ${_safeParsePrice(req['price']).toStringAsFixed(2)}',
                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
                         ),
                       ],
