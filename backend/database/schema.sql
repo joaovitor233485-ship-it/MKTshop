@@ -80,6 +80,21 @@ CREATE TABLE IF NOT EXISTS chats (
   FOREIGN KEY (sender_id) REFERENCES users(id)
 );
 
+CREATE TABLE IF NOT EXISTS pro_catalog_items (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  professional_id INT UNSIGNED NOT NULL,
+  category_id INT UNSIGNED NOT NULL,
+  item_name VARCHAR(150) NOT NULL,
+  item_type ENUM('service', 'part') NOT NULL DEFAULT 'service',
+  price DECIMAL(10,2) NOT NULL,
+  description VARCHAR(255),
+  active TINYINT(1) DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (professional_id) REFERENCES users(id),
+  FOREIGN KEY (category_id) REFERENCES service_categories(id)
+);
+
 INSERT IGNORE INTO service_categories (id, name, description, active) VALUES
 (1, 'Celular', 'Serviços de manutenção de celulares.', 1),
 (2, 'Notebook', 'Serviços de manutenção de notebooks.', 1),

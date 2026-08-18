@@ -360,5 +360,62 @@
   ],
   "payments": [],
   "reviews": [],
-  "promotions": []
+  "promotions": [],
+  "pro_catalog_items": [
+    {
+      "id": 1,
+      "professional_id": 2,
+      "category_id": 1,
+      "item_name": "Troca de Tela iPhone 11 (Original)",
+      "item_type": "part",
+      "price": 380,
+      "description": "Tela OLED de alta qualidade com garantia de 90 dias.",
+      "active": 1,
+      "created_at": "2026-08-11T21:30:00.000Z"
+    },
+    {
+      "id": 2,
+      "professional_id": 2,
+      "category_id": 1,
+      "item_name": "Troca de Bateria Premium Celular",
+      "item_type": "part",
+      "price": 180,
+      "description": "Bateria com 100% de saúde e selo de garantia.",
+      "active": 1,
+      "created_at": "2026-08-11T21:30:00.000Z"
+    },
+    {
+      "id": 3,
+      "professional_id": 2,
+      "category_id": 1,
+      "item_name": "Desoxidação e Banho Químico",
+      "item_type": "service",
+      "price": 150,
+      "description": "Limpeza de placa de celular atingido por água/líquidos.",
+      "active": 1,
+      "created_at": "2026-08-11T21:30:00.000Z"
+    },
+    {
+      "id": 4,
+      "professional_id": 2,
+      "category_id": 2,
+      "item_name": "Formatação Completa com Backup",
+      "item_type": "service",
+      "price": 130,
+      "description": "Instalação do Windows 11/10 + drivers + programas básicos.",
+      "active": 1,
+      "created_at": "2026-08-11T21:30:00.000Z"
+    },
+    {
+      "id": 5,
+      "professional_id": 2,
+      "category_id": 2,
+      "item_name": "SSD 480GB Kingston + Instalação",
+      "item_type": "part",
+      "price": 260,
+      "description": "Upgrade de velocidade de inicialização do notebook.",
+      "active": 1,
+      "created_at": "2026-08-11T21:30:00.000Z"
+    }
+  ]
 }

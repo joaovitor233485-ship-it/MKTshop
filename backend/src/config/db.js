@@ -216,6 +216,7 @@ const executeInMemory = async (sql, params = []) => {
   // SERVICE REQUESTS QUERIES
   if (query.includes('INSERT INTO service_requests')) {
     const newId = inMemoryStore.requests.length + 1;
+    const parsedPrice = typeof params[9] === 'number' ? params[9] : (parseFloat(params[9]) || 280.00);
     const newReq = {
       id: newId,
       user_id: params[0],
@@ -226,8 +227,9 @@ const executeInMemory = async (sql, params = []) => {
       photos: params[4],
       address: params[5],
       scheduled_at: params[6] || null,
-      status: 'pending',
-      price: params[7] || 150.00,
+      status: params[7] || 'pending',
+      payment_method: params[8] || 'cash',
+      price: parsedPrice,
       created_at: new Date().toISOString()
     };
     inMemoryStore.requests.push(newReq);
