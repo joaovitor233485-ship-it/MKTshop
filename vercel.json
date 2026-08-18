@@ -1,0 +1,10 @@
+{
+  "buildCommand": "cd web-admin && npm install && npm run build",
+  "outputDirectory": "web-admin/dist/shopmkt-admin",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
