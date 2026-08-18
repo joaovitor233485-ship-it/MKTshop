@@ -21,6 +21,7 @@ const processPayment = async (req, res) => {
       status: 'success',
       paymentId: result.insertId,
       receipt_code: receiptCode,
+      date: new Date().toISOString(),
       message: 'Pagamento processado com sucesso! Comprovante emitido.'
     });
   } catch (error) {

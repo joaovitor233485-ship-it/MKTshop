@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -97,6 +95,7 @@ class ApiService {
     required String address,
     required String scheduledAt,
     required double estimatedPrice,
+    String paymentMethod = 'cash',
   }) async {
     return _send((_) => http.post(
           Uri.parse('$baseUrl/services/requests'),
@@ -110,6 +109,7 @@ class ApiService {
             'address': address,
             'scheduled_at': scheduledAt,
             'estimated_price': estimatedPrice,
+            'payment_method': paymentMethod,
           }),
         ));
   }

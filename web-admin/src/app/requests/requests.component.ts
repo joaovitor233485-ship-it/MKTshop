@@ -44,8 +44,26 @@ export class RequestsComponent implements OnInit {
     }
   }
 
+  confirmPayment(requestId: number): void {
+    if (confirm(`Deseja confirmar a recepção do pagamento via Mercado Pago para a solicitação #${requestId} e liberá-la para os profissionais?`)) {
+      this.isLoading = true;
+      this.apiService.confirmPayment(requestId).subscribe({
+        next: (res) => {
+          alert('Pagamento verificado e confirmado com sucesso! Chamado liberado aos profissionais.');
+          this.loadRequests();
+        },
+        error: (err) => {
+          console.error('Erro ao confirmar pagamento:', err);
+          alert('Erro ao confirmar pagamento.');
+          this.isLoading = false;
+        }
+      });
+    }
+  }
+
   getStatusBadgeClass(status: string): string {
     switch (status) {
+      case 'awaiting_payment_confirmation': return 'badge-canceled'; // ou badge customizada
       case 'pending': return 'badge-pending';
       case 'assigned':
       case 'on_the_way':
@@ -59,7 +77,8 @@ export class RequestsComponent implements OnInit {
 
   getStatusLabel(status: string): string {
     const map: { [key: string]: string } = {
-      'pending': 'Aguardando Aceite',
+      'awaiting_payment_confirmation': 'Aguardando Validação de Pagamento (PIX / Cartão)',
+      'pending': 'Aguardando Aceite do Profissional',
       'assigned': 'Aceito / Atribuído',
       'on_the_way': 'Técnico Em Deslocamento',
       'arrived': 'Técnico no Local',

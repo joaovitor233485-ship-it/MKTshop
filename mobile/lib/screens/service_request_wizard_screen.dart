@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import 'tracking_screen.dart';
 
@@ -20,6 +21,17 @@ class _ServiceRequestWizardScreenState extends State<ServiceRequestWizardScreen>
   int _currentStep = 0;
   final ApiService _apiService = ApiService();
 
+  Future<void> _openMercadoPagoLink() async {
+    final url = Uri.parse('https://link.mercadopago.com.br/shopmkt');
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        await launchUrl(url);
+      }
+    } catch (e) {
+      debugPrint('Erro ao abrir link: $e');
+    }
+  }
+
   // State values across the 7 steps
   int _selectedCategory = 1;
   String _categoryName = 'Celular';
@@ -32,6 +44,7 @@ class _ServiceRequestWizardScreenState extends State<ServiceRequestWizardScreen>
   final _addressController = TextEditingController(text: 'Av. Paulista, 1000 - Bela Vista, São Paulo - SP');
   String _scheduleOption = 'Imediato'; // 'Imediato', 'Hoje', 'Amanhã', 'Personalizado'
   String _selectedTime = '14:30';
+  String _paymentMethod = 'pix'; // 'pix', 'card_online', 'card_delivery', 'cash'
 
   final Map<String, List<String>> _problemsByCategory = {
     'Celular': [
@@ -133,18 +146,29 @@ class _ServiceRequestWizardScreenState extends State<ServiceRequestWizardScreen>
       address: _addressController.text,
       scheduledAt: _scheduleOption == 'Imediato' ? '' : '$_scheduleOption - $_selectedTime',
       estimatedPrice: 280.00,
+      paymentMethod: _paymentMethod,
     );
 
     if (mounted) {
       Navigator.pop(context); // fecha loading
       final newId = res['requestId'] as int;
+      final reqStatus = res['requestStatus'] as String? ?? 'pending';
+
+      final msg = reqStatus == 'awaiting_payment_confirmation'
+          ? 'Pedido criado! Efetue o pagamento no link do Mercado Pago para validação do Admin.'
+          : 'Solicitação enviada com sucesso aos profissionais próximos!';
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Solicitação enviada com sucesso aos profissionais próximos!'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: Text(msg),
+          backgroundColor: reqStatus == 'awaiting_payment_confirmation' ? Colors.orange[800] : Colors.green,
+          duration: const Duration(seconds: 5),
         ),
       );
+
+      if (reqStatus == 'awaiting_payment_confirmation') {
+        _openMercadoPagoLink();
+      }
 
       Navigator.pushReplacement(
         context,
@@ -553,15 +577,23 @@ class _ServiceRequestWizardScreenState extends State<ServiceRequestWizardScreen>
     );
   }
 
-  // Etapa 7: Enviar Solicitação (Resumo)
+  // Etapa 7: Enviar Solicitação (Resumo e Forma de Pagamento)
   Widget _buildStep7Summary() {
+    final paymentOptions = [
+      {'key': 'pix', 'title': 'PIX (Aprovação via Mercado Pago)', 'subtitle': 'Liberação após validação do Admin', 'icon': Icons.pix, 'color': Colors.teal},
+      {'key': 'card_online', 'title': 'Cartão de Crédito Online', 'subtitle': 'Liberação após validação do Admin', 'icon': Icons.credit_card, 'color': Colors.blue},
+      {'key': 'card_delivery', 'title': 'Cartão na Maquininha', 'subtitle': 'Pagamento ao final do atendimento', 'icon': Icons.payment, 'color': Colors.orange},
+      {'key': 'cash', 'title': 'Dinheiro em Mãos', 'subtitle': 'Pagamento ao final do atendimento', 'icon': Icons.attach_money, 'color': Colors.green},
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Etapa 7: Confirmar e Enviar Pedido', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 6),
-        Text('Confira o resumo das informações antes do envio automático.', style: TextStyle(color: Colors.grey[600])),
+        Text('Confira o resumo das informações e selecione a forma de pagamento.', style: TextStyle(color: Colors.grey[600])),
         const SizedBox(height: 20),
+
         Card(
           elevation: 4,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -586,6 +618,99 @@ class _ServiceRequestWizardScreenState extends State<ServiceRequestWizardScreen>
             ),
           ),
         ),
+
+        const SizedBox(height: 24),
+
+        const Text('Forma de Pagamento:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E1B4B))),
+        const SizedBox(height: 10),
+
+        Column(
+          children: paymentOptions.map((opt) {
+            final isSelected = _paymentMethod == opt['key'];
+            return Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(
+                  color: isSelected ? const Color(0xFF4F46E5) : Colors.grey[300]!,
+                  width: isSelected ? 2 : 1,
+                ),
+              ),
+              child: ListTile(
+                leading: Icon(opt['icon'] as IconData, color: opt['color'] as Color),
+                title: Text(opt['title'] as String, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+                subtitle: Text(opt['subtitle'] as String, style: const TextStyle(fontSize: 11)),
+                trailing: isSelected ? const Icon(Icons.check_circle, color: Color(0xFF4F46E5)) : null,
+                onTap: () {
+                  final key = opt['key'] as String;
+                  setState(() => _paymentMethod = key);
+                  if (key == 'pix' || key == 'card_online') {
+                    _openMercadoPagoLink();
+                  }
+                },
+              ),
+            );
+          }).toList(),
+        ),
+
+        if (_paymentMethod == 'pix' || _paymentMethod == 'card_online') ...[
+          const SizedBox(height: 12),
+          Card(
+            color: Colors.amber[50],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.amber[400]!),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(Icons.info_outline, color: Colors.amber, size: 20),
+                      SizedBox(width: 8),
+                      Text('Pagamento Online (Mercado Pago)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF78350F))),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Efetue o pagamento através do link oficial abaixo. Após efetuado, nosso Administrador confirmará o valor e o pedido será imediatamente liberado para os profissionais:',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF92400E)),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _openMercadoPagoLink,
+                      icon: const Icon(Icons.open_in_new, color: Colors.white, size: 18),
+                      label: const Text('Abrir Mercado Pago em Nova Aba', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF009EE3), // Mercado Pago Blue
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  InkWell(
+                    onTap: _openMercadoPagoLink,
+                    child: SelectableText(
+                      'https://link.mercadopago.com.br/shopmkt',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: Colors.blue[900],
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

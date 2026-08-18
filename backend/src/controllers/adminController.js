@@ -110,11 +110,34 @@ const createPromotion = async (req, res) => {
   }
 };
 
+const confirmPaymentAndRelease = async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const [result] = await pool.execute(
+      "UPDATE service_requests SET status = 'pending' WHERE id = ?",
+      [requestId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ status: 'error', message: 'Solicitação não encontrada.' });
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Pagamento verificado e confirmado! O pedido foi liberado aos profissionais próximos.'
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: 'error', message: 'Erro ao confirmar pagamento do chamado.' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getPendingPros,
   updateUserStatus,
   createCategory,
   listPromotions,
-  createPromotion
+  createPromotion,
+  confirmPaymentAndRelease
 };

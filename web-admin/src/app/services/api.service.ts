@@ -30,5 +30,9 @@ export class ApiService {
   updateUserStatus(userId: number, status: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/admin/users/${userId}/status`, { status });
   }
+
+  confirmPayment(requestId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/requests/${requestId}/confirm-payment`, {});
+  }
 }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import 'chat_screen.dart';
 import 'payment_screen.dart';
@@ -16,6 +17,17 @@ class _TrackingScreenState extends State<TrackingScreen> {
   final ApiService _apiService = ApiService();
   Map<String, dynamic>? _requestData;
   bool _isLoading = true;
+
+  Future<void> _openMercadoPagoLink() async {
+    final url = Uri.parse('https://link.mercadopago.com.br/shopmkt');
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        await launchUrl(url);
+      }
+    } catch (e) {
+      debugPrint('Erro ao abrir link: $e');
+    }
+  }
 
   final List<Map<String, dynamic>> _stages = [
     {'key': 'pending', 'label': 'Solicitação enviada', 'desc': 'Procurando profissionais disponíveis'},
@@ -86,6 +98,76 @@ class _TrackingScreenState extends State<TrackingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Card de aviso quando aguarda confirmação do pagamento
+            if (currentStatus == 'awaiting_payment_confirmation') ...[
+              Card(
+                color: Colors.amber[50],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: Colors.amber[400]!),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: const [
+                          Icon(Icons.hourglass_top, color: Colors.amber, size: 24),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Aguardando Confirmação do Pagamento pelo Admin',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF78350F)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Seu pedido foi registrado. Realize o pagamento via Mercado Pago no link oficial abaixo:',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF92400E)),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _openMercadoPagoLink,
+                          icon: const Icon(Icons.open_in_new, color: Colors.white, size: 18),
+                          label: const Text('Abrir Mercado Pago em Nova Aba', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF009EE3),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: _openMercadoPagoLink,
+                        child: SelectableText(
+                          'https://link.mercadopago.com.br/shopmkt',
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: Colors.blue[900],
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Assim que o Administrador confirmar o valor no painel, o seu chamado será liberado imediatamente aos profissionais próximos!',
+                        style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: Color(0xFF92400E)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
             // Professional Badge Card
             Card(
               elevation: 4,

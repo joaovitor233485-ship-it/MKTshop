@@ -12,25 +12,33 @@ const listCategories = async (req, res) => {
 
 const createRequest = async (req, res) => {
   try {
-    const { user_id, category_id, problem, description, photos, address, scheduled_at, estimated_price } = req.body;
+    const { user_id, category_id, problem, description, photos, address, scheduled_at, estimated_price, payment_method } = req.body;
     if (!user_id || !category_id || !problem || !description || !address) {
       return res.status(400).json({ status: 'error', message: 'Dados obrigatórios ausentes.' });
     }
 
     const price = estimated_price || 150.00;
     const scheduledDate = scheduled_at && /^\d{4}-\d{2}-\d{2}/.test(scheduled_at) ? scheduled_at : null;
+    const method = payment_method || 'cash';
+    
+    // Regra: PIX ou Cartão Online requerem confirmação do pagamento pelo Admin antes de ir para os profissionais
+    const initialStatus = (method === 'pix' || method === 'card_online') ? 'awaiting_payment_confirmation' : 'pending';
 
     const [result] = await pool.execute(
       `INSERT INTO service_requests 
-        (user_id, category_id, problem, description, photos, address, scheduled_at, status, price) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
-      [user_id, category_id, problem, description, JSON.stringify(photos || []), address, scheduledDate, price]
+        (user_id, category_id, problem, description, photos, address, scheduled_at, status, payment_method, price) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [user_id, category_id, problem, description, JSON.stringify(photos || []), address, scheduledDate, initialStatus, method, price]
     );
 
     res.status(201).json({
       status: 'success',
-      message: 'Solicitação de serviço criada com sucesso.',
+      message: initialStatus === 'awaiting_payment_confirmation' 
+        ? 'Solicitação gerada! Aguardando confirmação do pagamento via Mercado Pago pelo Administrador.' 
+        : 'Solicitação de serviço enviada com sucesso aos profissionais!',
       requestId: result.insertId,
+      requestStatus: initialStatus,
+      payment_method: method,
       estimated_price: price
     });
   } catch (error) {
@@ -44,7 +52,7 @@ const listRequests = async (req, res) => {
     const { userId, proId, status, availableOnly } = req.query;
     let query = `
       SELECT r.id, r.user_id, r.category_id, r.professional_id, r.problem, r.description, 
-             r.photos, r.address, r.scheduled_at, r.status, r.price, r.completion_photos, r.completion_notes, r.created_at,
+             r.photos, r.address, r.scheduled_at, r.status, r.payment_method, r.price, r.completion_photos, r.completion_notes, r.created_at,
              u.name AS client_name, u.phone AS client_phone,
              c.name AS category_name,
              p.name AS pro_name, p.phone AS pro_phone
@@ -95,7 +103,7 @@ const getRequestById = async (req, res) => {
     const { id } = req.params;
     const [rows] = await pool.execute(
       `SELECT r.id, r.user_id, r.category_id, r.professional_id, r.problem, r.description, 
-             r.photos, r.address, r.scheduled_at, r.status, r.price, r.completion_photos, r.completion_notes, r.created_at,
+             r.photos, r.address, r.scheduled_at, r.status, r.payment_method, r.price, r.completion_photos, r.completion_notes, r.created_at,
              u.name AS client_name, u.phone AS client_phone, u.email AS client_email,
              c.name AS category_name,
              p.name AS pro_name, p.phone AS pro_phone, p.email AS pro_email
@@ -152,7 +160,7 @@ const updateStatus = async (req, res) => {
     const { requestId } = req.params;
     const { status, completion_photos, completion_notes } = req.body;
 
-    const validStatuses = ['pending', 'assigned', 'on_the_way', 'arrived', 'in_progress', 'completed', 'canceled'];
+    const validStatuses = ['awaiting_payment_confirmation', 'pending', 'assigned', 'on_the_way', 'arrived', 'in_progress', 'completed', 'canceled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ status: 'error', message: 'Status inválido.' });
     }

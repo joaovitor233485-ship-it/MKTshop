@@ -14,6 +14,9 @@
     <button class="tab-btn" [class.active]="currentFilter === 'all'" (click)="applyFilter('all')">
       Todas as Solicitações ({{ allRequests.length }})
     </button>
+    <button class="tab-btn" [class.active]="currentFilter === 'awaiting_payment_confirmation'" (click)="applyFilter('awaiting_payment_confirmation')">
+      💳 Aguardando Pagamento (PIX/Cartão)
+    </button>
     <button class="tab-btn" [class.active]="currentFilter === 'pending'" (click)="applyFilter('pending')">
       ⏳ Aguardando Aceite
     </button>
@@ -57,13 +60,35 @@
         </div>
 
         <div>
-          <span style="color: var(--text-muted); display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Endereço do Atendimento</span>
-          <div style="color: var(--text-main);">{{ req.address }}</div>
+          <span style="color: var(--text-muted); display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Forma de Pagamento</span>
+          <strong style="color: var(--text-main); text-transform: uppercase;">{{ req.payment_method || 'cash' }}</strong>
+          <div *ngIf="req.payment_method === 'pix' || req.payment_method === 'card_online'" style="font-size: 0.75rem; color: var(--color-warning); font-weight: 700;">
+            Requer Confirmação Mercado Pago
+          </div>
         </div>
 
         <div>
           <span style="color: var(--text-muted); display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Valor Estimado</span>
           <strong style="color: var(--color-success); font-size: 1.1rem;">R$ {{ req.price | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+
+      <!-- Caixa de Confirmação de Pagamento pelo Admin -->
+      <div *ngIf="req.status === 'awaiting_payment_confirmation'" style="margin-top: 14px; padding: 16px; background: #FEF3C7; border: 1px solid #F59E0B; border-radius: var(--radius-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="color: #92400E; font-weight: 800; font-size: 0.95rem;">
+              💳 Pagamento via PIX / Cartão Online Pendente de Verificação
+            </div>
+            <div style="font-size: 0.85rem; color: #B45309; margin-top: 4px;">
+              Verifique no extrato se o valor de <strong>R$ {{ req.price | number:'1.2-2' }}</strong> foi recebido via 
+              <a href="https://link.mercadopago.com.br/shopmkt" target="_blank" style="color: #1D4ED8; font-weight: 700; text-decoration: underline;">link.mercadopago.com.br/shopmkt</a>.
+            </div>
+          </div>
+
+          <button (click)="confirmPayment(req.id)" [disabled]="isLoading" style="padding: 10px 18px; background: #059669; color: #FFF; border: none; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; box-shadow: var(--shadow-sm);">
+            ✅ Confirmar Valor e Liberar para Profissionais
+          </button>
         </div>
       </div>
 

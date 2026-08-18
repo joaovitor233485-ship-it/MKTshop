@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -16,6 +17,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
   String _selectedMethod = 'pix'; // 'pix', 'credit_card', 'debit_card', 'cash', 'wallet'
   bool _isProcessing = false;
   Map<String, dynamic>? _receiptData;
+
+  Future<void> _openMercadoPagoLink() async {
+    final url = Uri.parse('https://link.mercadopago.com.br/shopmkt');
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        await launchUrl(url);
+      }
+    } catch (e) {
+      debugPrint('Erro ao abrir link: $e');
+    }
+  }
 
   Future<void> _handlePayment() async {
     setState(() => _isProcessing = true);
@@ -82,7 +94,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           const SizedBox(height: 20),
 
           // If PIX selected show QR preview
-          if (_selectedMethod == 'pix') ...[
+          if (_selectedMethod == 'pix' || _selectedMethod == 'credit_card') ...[
             Card(
               color: Colors.teal[50],
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.teal[300]!)),
@@ -90,13 +102,25 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    const Icon(Icons.qr_code_2, size: 100, color: Colors.teal),
+                    const Icon(Icons.qr_code_2, size: 80, color: Colors.teal),
                     const SizedBox(height: 8),
-                    const Text('Escaneie o QR Code ou copie a chave abaixo:', style: TextStyle(fontSize: 12)),
-                    const SizedBox(height: 8),
-                    SelectableText(
-                      '00020126580014BR.GOV.BCB.PIX0136shopmkt-pix-key-9988112252040000',
-                      style: TextStyle(fontFamily: 'monospace', fontSize: 11, color: Colors.grey[800]),
+                    ElevatedButton.icon(
+                      onPressed: _openMercadoPagoLink,
+                      icon: const Icon(Icons.open_in_new, color: Colors.white, size: 18),
+                      label: const Text('Abrir Mercado Pago em Nova Aba', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF009EE3),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    InkWell(
+                      onTap: _openMercadoPagoLink,
+                      child: SelectableText(
+                        'https://link.mercadopago.com.br/shopmkt',
+                        style: TextStyle(fontFamily: 'monospace', fontSize: 12, color: Colors.blue[900], decoration: TextDecoration.underline),
+                      ),
                     ),
                   ],
                 ),
@@ -141,6 +165,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
+  String _formattedDate() {
+    final rawDate = _receiptData?['date'] ?? _receiptData?['created_at'];
+    if (rawDate == null) {
+      final now = DateTime.now().toIso8601String();
+      return now.substring(0, 19).replaceAll('T', ' ');
+    }
+    final str = rawDate.toString();
+    if (str.length >= 19) {
+      return str.substring(0, 19).replaceAll('T', ' ');
+    }
+    return str;
+  }
+
   // Comprovante Eletrônico
   Widget _buildReceiptView() {
     return SingleChildScrollView(
@@ -164,10 +201,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 const Text('ShopMKT Assistência Domiciliar', style: TextStyle(fontSize: 12, color: Colors.grey)),
                 const SizedBox(height: 20),
                 const Divider(),
-                _receiptRow('Código do Comprovante', _receiptData!['receipt_code'] as String),
+                _receiptRow('Código do Comprovante', (_receiptData?['receipt_code'] ?? 'N/A').toString()),
                 _receiptRow('Status', 'PAGO ✓', isGreen: true),
                 _receiptRow('Forma de Pagamento', _selectedMethod.toUpperCase()),
-                _receiptRow('Data', _receiptData!['date'].toString().substring(0, 19)),
+                _receiptRow('Data', _formattedDate()),
                 _receiptRow('Valor Total', 'R\$ ${widget.amount.toStringAsFixed(2)}', isBold: true),
                 const Divider(),
                 const SizedBox(height: 16),

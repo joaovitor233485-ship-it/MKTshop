@@ -123,6 +123,7 @@
       "address": "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
       "scheduled_at": null,
       "status": "completed",
+      "payment_method": "cash",
       "price": 150,
       "created_at": "2026-08-11T21:31:52.116Z"
     },
@@ -137,6 +138,7 @@
       "address": "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
       "scheduled_at": null,
       "status": "completed",
+      "payment_method": "pix",
       "price": 280,
       "created_at": "2026-08-11T21:34:32.568Z"
     },
@@ -151,6 +153,7 @@
       "address": "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
       "scheduled_at": null,
       "status": "completed",
+      "payment_method": "card_online",
       "price": 280,
       "created_at": "2026-08-11T21:44:25.745Z"
     },
@@ -165,6 +168,7 @@
       "address": "angelo pipolo 1408",
       "scheduled_at": null,
       "status": "completed",
+      "payment_method": "cash",
       "price": 280,
       "created_at": "2026-08-11T21:51:36.162Z"
     },
@@ -179,6 +183,7 @@
       "address": "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
       "scheduled_at": null,
       "status": "assigned",
+      "payment_method": "cash",
       "price": 280,
       "created_at": "2026-08-11T22:35:15.001Z"
     }
