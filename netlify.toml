@@ -6,10 +6,10 @@
 [functions]
   node_bundler = "esbuild"
 
-# Proxy only API routes to the backend function to avoid interfering with static assets
+# Proxy API routes to the Render backend service
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/server/:splat"
+  to = "https://shopmkt-backend.onrender.com/:splat"
   status = 200
   force = true
 
