@@ -9,9 +9,7 @@ class ApiService {
   ApiService._internal();
 
   String get baseUrl {
-    if (kIsWeb) return 'http://localhost:3001';
-    // Substitua pelo IP da sua máquina na rede local para celular físico
-    return 'http://192.168.3.76:3001';
+    return 'https://shopmkt-backend.onrender.com';
   }
   Map<String, dynamic>? currentUser;
   String? token;
