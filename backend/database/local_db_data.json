@@ -1,0 +1,359 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Cliente Exemplo",
+      "cpf": "111.111.111-11",
+      "email": "cliente@shopmkt.com",
+      "phone": "(11) 99999-1111",
+      "password": "$2a$10$hDrz94VI0mZU68zG/O5eseEgSVcPGK4CUyu14uT3PnCuYorFzth0S",
+      "address": "Av. Paulista, 1000 - SP",
+      "role": "client",
+      "status": "active",
+      "created_at": "2026-08-11T21:31:52.115Z"
+    },
+    {
+      "id": 2,
+      "name": "Carlos Técnico",
+      "cpf": "222.222.222-22",
+      "email": "pro@shopmkt.com",
+      "phone": "(11) 98888-2222",
+      "password": "$2a$10$hDrz94VI0mZU68zG/O5eseEgSVcPGK4CUyu14uT3PnCuYorFzth0S",
+      "address": "Rua Augusta, 500 - SP",
+      "role": "professional",
+      "status": "active",
+      "document_id": "SP-12.345.678",
+      "operation_area": "Assistência Técnica de Eletrônicos (Celulares & Notebooks)",
+      "resume": "Técnico especialista com 8 anos de experiência em reparos de placa, troca de telas, manutenção preventiva e upgrade de hardware.",
+      "certifications": "Certificação Apple ACMT • Técnico em Eletrônica Geral CREA/SP",
+      "created_at": "2026-08-11T21:31:52.116Z"
+    },
+    {
+      "id": 3,
+      "name": "Administrador",
+      "cpf": "333.333.333-33",
+      "email": "admin@shopmkt.com",
+      "phone": "(11) 97777-3333",
+      "password": "$2a$10$hDrz94VI0mZU68zG/O5eseEgSVcPGK4CUyu14uT3PnCuYorFzth0S",
+      "address": "Centro - SP",
+      "role": "admin",
+      "status": "active",
+      "document_id": "SP-99.999.999",
+      "operation_area": "Gestão da Plataforma",
+      "resume": "Administrador principal do sistema ShopMKT.",
+      "certifications": "Gestão de Plataformas Digitais",
+      "created_at": "2026-08-11T21:31:52.116Z"
+    },
+    {
+      "id": 4,
+      "name": "João Vitor Epifanio Ramos",
+      "cpf": "123456789",
+      "email": "joao@gmail.com",
+      "phone": "12312354235",
+      "password": "$2a$10$VdJ/NEG5NeBa802qyL7LFuMfuR57PihtgCJ7btENFJumVnFxt89Ke",
+      "address": "angelo pipolo 1408",
+      "role": "client",
+      "status": "active",
+      "document_id": "Documento em Análise",
+      "operation_area": "Manutenção Geral",
+      "resume": "Profissional autônomo cadastrado na plataforma.",
+      "certifications": "Certificações técnicas pendentes de verificação.",
+      "created_at": "2026-08-11T21:50:29.951Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Celular",
+      "description": "Serviços de manutenção de celulares.",
+      "active": 1
+    },
+    {
+      "id": 2,
+      "name": "Notebook",
+      "description": "Serviços de manutenção de notebooks.",
+      "active": 1
+    },
+    {
+      "id": 3,
+      "name": "Computador",
+      "description": "Serviços de manutenção de computadores.",
+      "active": 1
+    },
+    {
+      "id": 4,
+      "name": "Videogame",
+      "description": "Serviços para videogames e consoles.",
+      "active": 1
+    },
+    {
+      "id": 5,
+      "name": "Móveis",
+      "description": "Montagem e consertos de móveis.",
+      "active": 1
+    },
+    {
+      "id": 6,
+      "name": "TV",
+      "description": "Instalação e manutenção de televisores.",
+      "active": 1
+    },
+    {
+      "id": 7,
+      "name": "Elétrica",
+      "description": "Serviços elétricos residenciais.",
+      "active": 1
+    },
+    {
+      "id": 8,
+      "name": "Hidráulica",
+      "description": "Serviços hidráulicos residenciais.",
+      "active": 1
+    }
+  ],
+  "requests": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "category_id": 1,
+      "professional_id": null,
+      "problem": "Tela quebrada",
+      "description": "Meu celular caiu da mesa. A tela ficou totalmente preta.",
+      "photos": "[\"foto_tela_danificada.jpg\"]",
+      "address": "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
+      "scheduled_at": null,
+      "status": "completed",
+      "price": 150,
+      "created_at": "2026-08-11T21:31:52.116Z"
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "category_id": 1,
+      "professional_id": 2,
+      "problem": "Troca de bateria",
+      "description": "Meu celular caiu da mesa. Após a queda, a tela ficou totalmente preta e não responde ao toque.",
+      "photos": "[\"foto_tela_danificada.jpg\"]",
+      "address": "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
+      "scheduled_at": null,
+      "status": "completed",
+      "price": 280,
+      "created_at": "2026-08-11T21:34:32.568Z"
+    },
+    {
+      "id": 3,
+      "user_id": 1,
+      "category_id": 3,
+      "professional_id": 2,
+      "problem": "Configuração de rede Wi-Fi",
+      "description": "Meu celular caiu da mesa. Após a queda, a tela ficou totalmente preta e não responde ao toque.",
+      "photos": "[\"foto_tela_danificada.jpg\"]",
+      "address": "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
+      "scheduled_at": null,
+      "status": "completed",
+      "price": 280,
+      "created_at": "2026-08-11T21:44:25.745Z"
+    },
+    {
+      "id": 4,
+      "user_id": 4,
+      "category_id": 1,
+      "professional_id": 2,
+      "problem": "Troca de bateria",
+      "description": "Meu celular caiu da mesa. Após a queda, a tela ficou totalmente preta e não responde ao toque.",
+      "photos": "[\"foto_tela_danificada.jpg\"]",
+      "address": "angelo pipolo 1408",
+      "scheduled_at": null,
+      "status": "completed",
+      "price": 280,
+      "created_at": "2026-08-11T21:51:36.162Z"
+    },
+    {
+      "id": 5,
+      "user_id": 1,
+      "category_id": 2,
+      "professional_id": 2,
+      "problem": "Tela trincada / Sem imagem",
+      "description": "Meu celular caiu da mesa. Após a queda, a tela ficou totalmente preta e não responde ao toque.",
+      "photos": "[\"foto_tela_danificada.jpg\"]",
+      "address": "Av. Paulista, 1000 - Bela Vista, São Paulo - SP",
+      "scheduled_at": null,
+      "status": "assigned",
+      "price": 280,
+      "created_at": "2026-08-11T22:35:15.001Z"
+    }
+  ],
+  "chats": [
+    {
+      "id": 1,
+      "request_id": "2",
+      "sender_id": 1,
+      "message": "oie",
+      "created_at": "2026-08-11T21:35:17.009Z"
+    },
+    {
+      "id": 2,
+      "request_id": "2",
+      "sender_id": 1,
+      "message": "oi",
+      "created_at": "2026-08-11T21:38:09.298Z"
+    },
+    {
+      "id": 3,
+      "request_id": "2",
+      "sender_id": 1,
+      "message": "sdasdad",
+      "created_at": "2026-08-11T21:38:14.354Z"
+    },
+    {
+      "id": 4,
+      "request_id": "2",
+      "sender_id": 1,
+      "message": "dad",
+      "created_at": "2026-08-11T21:38:20.118Z"
+    },
+    {
+      "id": 5,
+      "request_id": "2",
+      "sender_id": 1,
+      "message": "sda",
+      "created_at": "2026-08-11T21:39:16.693Z"
+    },
+    {
+      "id": 6,
+      "request_id": "2",
+      "sender_id": 1,
+      "message": "s",
+      "created_at": "2026-08-11T21:39:23.481Z"
+    },
+    {
+      "id": 7,
+      "request_id": "2",
+      "sender_id": 1,
+      "message": "sdad",
+      "created_at": "2026-08-11T21:40:29.549Z"
+    },
+    {
+      "id": 8,
+      "request_id": "1",
+      "sender_id": 1,
+      "message": "s",
+      "created_at": "2026-08-11T21:41:34.684Z"
+    },
+    {
+      "id": 9,
+      "request_id": "1",
+      "sender_id": 1,
+      "message": "s",
+      "created_at": "2026-08-11T21:41:36.218Z"
+    },
+    {
+      "id": 10,
+      "request_id": "1",
+      "sender_id": 1,
+      "message": "sdasd",
+      "created_at": "2026-08-11T21:41:37.772Z"
+    },
+    {
+      "id": 11,
+      "request_id": "2",
+      "sender_id": 2,
+      "message": "sdasdasd",
+      "created_at": "2026-08-11T21:41:48.010Z"
+    },
+    {
+      "id": 12,
+      "request_id": "2",
+      "sender_id": 2,
+      "message": "dsad",
+      "created_at": "2026-08-11T21:41:49.849Z"
+    },
+    {
+      "id": 13,
+      "request_id": "2",
+      "sender_id": 2,
+      "message": "dasda",
+      "created_at": "2026-08-11T21:41:51.709Z"
+    },
+    {
+      "id": 14,
+      "request_id": "3",
+      "sender_id": 1,
+      "message": "cara meu pc esta muito lento travando e sujo",
+      "created_at": "2026-08-11T21:44:46.481Z"
+    },
+    {
+      "id": 15,
+      "request_id": "3",
+      "sender_id": 2,
+      "message": "📍 Localização compartilhada: Av. Paulista, 1000 - Portaria Principal",
+      "created_at": "2026-08-11T21:45:47.898Z"
+    },
+    {
+      "id": 16,
+      "request_id": "3",
+      "sender_id": 2,
+      "message": "opa pode deixar",
+      "created_at": "2026-08-11T21:45:55.886Z"
+    },
+    {
+      "id": 17,
+      "request_id": "4",
+      "sender_id": 2,
+      "message": "📍 Localização compartilhada: Av. Paulista, 1000 - Portaria Principal",
+      "created_at": "2026-08-11T21:52:11.998Z"
+    },
+    {
+      "id": 18,
+      "request_id": "4",
+      "sender_id": 2,
+      "message": "📍 Localização compartilhada: Av. Paulista, 1000 - Portaria Principal",
+      "created_at": "2026-08-11T21:52:12.518Z"
+    },
+    {
+      "id": 19,
+      "request_id": "4",
+      "sender_id": 2,
+      "message": "📍 Localização compartilhada: Av. Paulista, 1000 - Portaria Principal",
+      "created_at": "2026-08-11T21:52:13.005Z"
+    },
+    {
+      "id": 20,
+      "request_id": "4",
+      "sender_id": 2,
+      "message": "📍 Localização compartilhada: Av. Paulista, 1000 - Portaria Principal",
+      "created_at": "2026-08-11T21:52:13.009Z"
+    },
+    {
+      "id": 21,
+      "request_id": "4",
+      "sender_id": 2,
+      "message": "📍 Localização compartilhada: Av. Paulista, 1000 - Portaria Principal",
+      "created_at": "2026-08-11T21:52:13.011Z"
+    },
+    {
+      "id": 22,
+      "request_id": "4",
+      "sender_id": 2,
+      "message": "📍 Localização compartilhada: Av. Paulista, 1000 - Portaria Principal",
+      "created_at": "2026-08-11T21:52:13.526Z"
+    },
+    {
+      "id": 23,
+      "request_id": "4",
+      "sender_id": 2,
+      "message": "📍 Localização compartilhada: Av. Paulista, 1000 - Portaria Principal",
+      "created_at": "2026-08-11T21:52:14.149Z"
+    },
+    {
+      "id": 24,
+      "request_id": "4",
+      "sender_id": 2,
+      "message": "pega ai",
+      "created_at": "2026-08-11T21:52:17.924Z"
+    }
+  ],
+  "payments": [],
+  "reviews": [],
+  "promotions": []
+}

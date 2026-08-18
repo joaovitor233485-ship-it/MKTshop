@@ -1,0 +1,57 @@
+<div class="admin-wrapper">
+  <!-- Menu Lateral Fixado (Sidebar) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">🛠️</div>
+      <div class="brand-info">
+        <span class="brand-name">ShopMKT</span>
+        <span class="brand-sub">Painel Admin v2.0</span>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/professionals" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">👷</span>
+        <span>Profissionais</span>
+      </a>
+      <a routerLink="/requests" routerLinkActive="active" class="nav-item">
+        <span class="nav-icon">📋</span>
+        <span>Solicitações</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="system-status">
+        <span class="status-dot"></span>
+        <span>API Conectada (3001)</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Conteúdo Principal com Topbar -->
+  <div class="main-layout">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title">Gestão de Serviços Domiciliares</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="user-profile">
+          <div class="avatar">A</div>
+          <div class="user-info">
+            <span class="user-name">Administrador</span>
+            <span class="user-role">Super Admin</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+

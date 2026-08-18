@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: shopmkt-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_DATABASE
+        value: defaultdb
+      - key: JWT_SECRET
+        generateValue: true

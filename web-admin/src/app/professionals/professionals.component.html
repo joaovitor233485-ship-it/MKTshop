@@ -1,0 +1,161 @@
+<section>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div>
+      <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">Gestão de Profissionais</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Análise de documentos, aprovação de prestadores e controle de acesso.</p>
+    </div>
+    <button (click)="loadProfessionals()" [disabled]="isLoading" style="padding: 10px 18px; background: var(--color-primary); color: #FFF; border-radius: var(--radius-sm); font-weight: 700;">
+      {{ isLoading ? 'Atualizando...' : '🔄 Recarregar Lista' }}
+    </button>
+  </div>
+
+  <!-- Abas de Filtro de Status -->
+  <div class="filter-tabs">
+    <button class="tab-btn" [class.active]="currentFilter === 'all'" (click)="applyFilter('all')">
+      Todos os Profissionais ({{ allProfessionals.length }})
+    </button>
+    <button class="tab-btn" [class.active]="currentFilter === 'pending'" (click)="applyFilter('pending')">
+      ⏳ Aguardando Aprovação
+    </button>
+    <button class="tab-btn" [class.active]="currentFilter === 'active'" (click)="applyFilter('active')">
+      ✅ Ativos / Aprovados
+    </button>
+    <button class="tab-btn" [class.active]="currentFilter === 'blocked'" (click)="applyFilter('blocked')">
+      🚫 Bloqueados
+    </button>
+  </div>
+
+  <!-- Lista de Profissionais em Cards -->
+  <div *ngIf="filteredProfessionals?.length; else emptyState">
+    <div *ngFor="let pro of filteredProfessionals" style="background: var(--bg-surface); border-radius: var(--radius-md); border: 1px solid var(--border-color); padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow-sm);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #EEF2FF; color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem;">
+            {{ pro.name?.charAt(0) || 'P' }}
+          </div>
+          <div>
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-main);">{{ pro.name }}</h3>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">{{ pro.email }} • {{ pro.phone || 'Sem telefone' }}</span>
+          </div>
+        </div>
+
+        <span class="badge-pill" [ngClass]="getStatusBadgeClass(pro.status)">
+          {{ getStatusLabel(pro.status) }}
+        </span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem; background: var(--bg-main); padding: 14px; border-radius: var(--radius-sm); margin-bottom: 16px;">
+        <div><strong>CPF:</strong> {{ pro.cpf || 'Não informado' }}</div>
+        <div><strong>Endereço:</strong> {{ pro.address || 'Não informado' }}</div>
+        <div><strong>Área de Atuação:</strong> {{ pro.operation_area || 'Geral' }}</div>
+        <div><strong>Doc. Registro:</strong> {{ pro.document_id || 'Não informado' }}</div>
+      </div>
+
+      <!-- Barra de Ações com 1-Clique -->
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button *ngIf="pro.status !== 'active'" (click)="changeStatus(pro.id, 'active')" class="action-btn btn-approve">
+            <span>✅</span> Aprovar Profissional
+          </button>
+          <button *ngIf="pro.status !== 'blocked'" (click)="changeStatus(pro.id, 'blocked')" class="action-btn btn-block">
+            <span>🚫</span> Bloquear Acesso
+          </button>
+          <button *ngIf="pro.status !== 'pending'" (click)="changeStatus(pro.id, 'pending')" class="action-btn btn-pending">
+            <span>⏳</span> Em Análise
+          </button>
+        </div>
+
+        <!-- Botão para Ver Ficha Completa -->
+        <button (click)="openDetails(pro)" style="padding: 9px 16px; background: #EEF2FF; color: var(--color-primary); border: 1px solid #C7D2FE; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.85rem;">
+          🔍 Ver Ficha / Detalhes Completos
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyState>
+    <div style="background: var(--bg-surface); padding: 40px; border-radius: var(--radius-md); text-align: center; border: 1px solid var(--border-color); color: var(--text-muted);">
+      Nenhum profissional encontrado nesta categoria.
+    </div>
+  </ng-template>
+
+  <!-- MODAL DE FICHA COMPLETA DO PROFISSIONAL -->
+  <div *ngIf="selectedProfessional" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;">
+    <div style="background: #FFFFFF; width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 28px; position: relative; animation: fadeIn 0.25s ease-out;">
+      
+      <!-- Botão Fechar -->
+      <button (click)="closeDetails()" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; background: #F1F5F9; color: var(--text-muted); font-size: 1.2rem; font-weight: bold;">
+        ✕
+      </button>
+
+      <!-- Cabeçalho do Modal -->
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5, #312E81); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 800;">
+          {{ selectedProfessional.name?.charAt(0) || 'P' }}
+        </div>
+        <div>
+          <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-main);">{{ selectedProfessional.name }}</h2>
+          <span class="badge-pill" [ngClass]="getStatusBadgeClass(selectedProfessional.status)" style="margin-top: 4px;">
+            {{ getStatusLabel(selectedProfessional.status) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Seção 1: Dados Pessoais & Contato -->
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
+          📌 Informações Pessoais & Contato
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; background: #F8FAFC; padding: 16px; border-radius: 12px; font-size: 0.9rem;">
+          <div><strong style="color: var(--text-muted);">E-mail:</strong><br>{{ selectedProfessional.email }}</div>
+          <div><strong style="color: var(--text-muted);">Telefone / WhatsApp:</strong><br>{{ selectedProfessional.phone || 'Não informado' }}</div>
+          <div><strong style="color: var(--text-muted);">CPF:</strong><br>{{ selectedProfessional.cpf || 'Não informado' }}</div>
+          <div><strong style="color: var(--text-muted);">Endereço Residencial:</strong><br>{{ selectedProfessional.address || 'Não informado' }}</div>
+        </div>
+      </div>
+
+      <!-- Seção 2: Documentação & Cadastro -->
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
+          📄 Documentação & Área de Atuação
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; background: #F8FAFC; padding: 16px; border-radius: 12px; font-size: 0.9rem;">
+          <div><strong style="color: var(--text-muted);">Doc. Registro (RG/CNH):</strong><br>{{ selectedProfessional.document_id || 'Não informado' }}</div>
+          <div><strong style="color: var(--text-muted);">Área de Atuação:</strong><br>{{ selectedProfessional.operation_area || 'Assistência Geral' }}</div>
+          <div><strong style="color: var(--text-muted);">Data de Registro:</strong><br>{{ selectedProfessional.created_at ? (selectedProfessional.created_at | date:'dd/MM/yyyy HH:mm') : 'Hoje' }}</div>
+        </div>
+      </div>
+
+      <!-- Seção 3: Currículo & Certificações -->
+      <div style="margin-bottom: 24px;">
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
+          🎓 Resumo Profissional & Certificações
+        </h4>
+        <div style="background: #F8FAFC; padding: 16px; border-radius: 12px; font-size: 0.9rem; margin-bottom: 10px;">
+          <strong style="color: var(--text-muted); display: block; margin-bottom: 4px;">Resumo da Experiência:</strong>
+          <p style="color: var(--text-main);">{{ selectedProfessional.resume || 'Técnico especialista cadastrado para atendimento residencial.' }}</p>
+        </div>
+        <div style="background: #F8FAFC; padding: 16px; border-radius: 12px; font-size: 0.9rem;">
+          <strong style="color: var(--text-muted); display: block; margin-bottom: 4px;">Certificações & Cursos:</strong>
+          <p style="color: var(--text-main);">{{ selectedProfessional.certifications || 'Certificação técnica de atendimento em análise.' }}</p>
+        </div>
+      </div>
+
+      <!-- Ações no Rodapé do Modal -->
+      <div style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 16px; border-top: 1px solid var(--border-color); flex-wrap: wrap;">
+        <button *ngIf="selectedProfessional.status !== 'active'" (click)="changeStatus(selectedProfessional.id, 'active')" class="action-btn btn-approve">
+          <span>✅</span> Aprovar Cadastro
+        </button>
+        <button *ngIf="selectedProfessional.status !== 'blocked'" (click)="changeStatus(selectedProfessional.id, 'blocked')" class="action-btn btn-block">
+          <span>🚫</span> Bloquear Acesso
+        </button>
+        <button (click)="closeDetails()" style="padding: 10px 20px; background: #E2E8F0; color: var(--text-main); border-radius: var(--radius-sm); font-weight: 700;">
+          Fechar Ficha
+        </button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+

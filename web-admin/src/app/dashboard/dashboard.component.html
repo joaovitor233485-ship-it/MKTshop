@@ -1,0 +1,82 @@
+<section>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div>
+      <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">Visão Geral do Marketplace</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">Métricas operacionais e desempenho dos serviços em tempo real.</p>
+    </div>
+    <button (click)="loadStats()" [disabled]="isLoading" style="padding: 10px 18px; background: var(--color-primary); color: #FFF; border-radius: var(--radius-sm); font-weight: 700;">
+      {{ isLoading ? 'Carregando...' : '🔄 Atualizar Dados' }}
+    </button>
+  </div>
+
+  <!-- KPI Cards Grid -->
+  <div class="card-grid">
+    <div class="kpi-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span class="kpi-title">Clientes Cadastrados</span>
+        <span style="font-size: 1.5rem;">👥</span>
+      </div>
+      <div class="kpi-value">{{ stats.total_clients || 0 }}</div>
+      <span style="font-size: 0.78rem; color: var(--color-success); font-weight: 700;">+ Ativos na base</span>
+    </div>
+
+    <div class="kpi-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span class="kpi-title">Técnicos Ativos</span>
+        <span style="font-size: 1.5rem;">👷</span>
+      </div>
+      <div class="kpi-value">{{ stats.active_pros || 0 }}</div>
+      <span style="font-size: 0.78rem; color: var(--color-primary); font-weight: 700;">Aprovados para atender</span>
+    </div>
+
+    <div class="kpi-card" style="border-left: 4px solid var(--color-warning);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span class="kpi-title">Pendentes de Aprovação</span>
+        <span style="font-size: 1.5rem;">⏳</span>
+      </div>
+      <div class="kpi-value" style="color: #B45309;">{{ stats.pending_pros || 0 }}</div>
+      <a routerLink="/professionals" style="font-size: 0.78rem; color: var(--color-warning); font-weight: 700; text-decoration: none;">Analisar cadastros &rarr;</a>
+    </div>
+
+    <div class="kpi-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span class="kpi-title">Chamados Ativos</span>
+        <span style="font-size: 1.5rem;">🛠️</span>
+      </div>
+      <div class="kpi-value">{{ stats.active_requests || 0 }}</div>
+      <span style="font-size: 0.78rem; color: var(--color-info); font-weight: 700;">Em andamento / Aceitos</span>
+    </div>
+
+    <div class="kpi-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span class="kpi-title">Serviços Concluídos</span>
+        <span style="font-size: 1.5rem;">✅</span>
+      </div>
+      <div class="kpi-value" style="color: var(--color-success);">{{ stats.completed_requests || 0 }}</div>
+      <span style="font-size: 0.78rem; color: var(--color-success); font-weight: 700;">100% finalizados</span>
+    </div>
+
+    <div class="kpi-card" style="background: linear-gradient(135deg, #1E1B4B, #312E81); color: #FFF;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <span class="kpi-title" style="color: #A5B4FC;">Faturamento Total</span>
+        <span style="font-size: 1.5rem;">💰</span>
+      </div>
+      <div class="kpi-value" style="color: #FFF;">R$ {{ stats.total_revenue | number:'1.2-2' }}</div>
+      <span style="font-size: 0.78rem; color: #818CF8; font-weight: 700;">Movimentação de pagamentos</span>
+    </div>
+  </div>
+
+  <!-- Painel de Atalhos Rápidos -->
+  <div style="background: var(--bg-surface); padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;">Ações Rápidas de Gestão</h3>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <button routerLink="/professionals" class="action-btn btn-approve" style="padding: 12px 20px;">
+        <span>👷</span> Gerenciar & Aprovar Profissionais
+      </button>
+      <button routerLink="/requests" class="action-btn" style="padding: 12px 20px; background: var(--color-primary); color: #FFF;">
+        <span>📋</span> Ver Todas as Solicitações
+      </button>
+    </div>
+  </div>
+</section>
+

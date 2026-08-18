@@ -1,0 +1,11 @@
+section {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+}
+
+.list-card {
+  background: #f8f9ff;
+  padding: 18px;
+  border-radius: 10px;
+}
