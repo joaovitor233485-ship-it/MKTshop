@@ -246,4 +246,87 @@ class ApiService {
         ));
     return true;
   }
+
+  // --- MÉTODOS DO CATÁLOGO DO PROFISSIONAL ---
+  Future<List<Map<String, dynamic>>> getProServices(int proId) async {
+    final result = await _send((_) => http.get(
+          Uri.parse('$baseUrl/pro-catalog/$proId/services'),
+          headers: _headers,
+        ));
+    return List<Map<String, dynamic>>.from(
+      (result['services'] as List).map((item) => Map<String, dynamic>.from(item)),
+    );
+  }
+
+  Future<bool> createProService(int proId, Map<String, dynamic> data) async {
+    await _send((_) => http.post(
+          Uri.parse('$baseUrl/pro-catalog/$proId/services'),
+          headers: _headers,
+          body: jsonEncode(data),
+        ));
+    return true;
+  }
+
+  Future<bool> updateProService(int proId, int serviceId, Map<String, dynamic> data) async {
+    await _send((_) => http.put(
+          Uri.parse('$baseUrl/pro-catalog/$proId/services/$serviceId'),
+          headers: _headers,
+          body: jsonEncode(data),
+        ));
+    return true;
+  }
+
+  Future<bool> deleteProService(int proId, int serviceId) async {
+    await _send((_) => http.delete(
+          Uri.parse('$baseUrl/pro-catalog/$proId/services/$serviceId'),
+          headers: _headers,
+        ));
+    return true;
+  }
+
+  Future<List<Map<String, dynamic>>> getProProducts(int proId) async {
+    final result = await _send((_) => http.get(
+          Uri.parse('$baseUrl/pro-catalog/$proId/products'),
+          headers: _headers,
+        ));
+    return List<Map<String, dynamic>>.from(
+      (result['products'] as List).map((item) => Map<String, dynamic>.from(item)),
+    );
+  }
+
+  Future<bool> createProProduct(int proId, Map<String, dynamic> data) async {
+    await _send((_) => http.post(
+          Uri.parse('$baseUrl/pro-catalog/$proId/products'),
+          headers: _headers,
+          body: jsonEncode(data),
+        ));
+    return true;
+  }
+
+  Future<bool> updateProProduct(int proId, int productId, Map<String, dynamic> data) async {
+    await _send((_) => http.put(
+          Uri.parse('$baseUrl/pro-catalog/$proId/products/$productId'),
+          headers: _headers,
+          body: jsonEncode(data),
+        ));
+    return true;
+  }
+
+  Future<bool> deleteProProduct(int proId, int productId) async {
+    await _send((_) => http.delete(
+          Uri.parse('$baseUrl/pro-catalog/$proId/products/$productId'),
+          headers: _headers,
+        ));
+    return true;
+  }
+
+  Future<bool> seedProDefaults(int proId, int categoryId) async {
+    await _send((_) => http.post(
+          Uri.parse('$baseUrl/pro-catalog/$proId/seed'),
+          headers: _headers,
+          body: jsonEncode({'categoryId': categoryId}),
+        ));
+    return true;
+  }
 }
+

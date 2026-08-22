@@ -34,5 +34,51 @@ export class ApiService {
   confirmPayment(requestId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/admin/requests/${requestId}/confirm-payment`, {});
   }
+
+  // --- ÁREA DO PROFISSIONAL ---
+  getCategories(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/pro-catalog/categories`);
+  }
+
+  updateProCategories(proId: number, operationArea: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/pro-catalog/${proId}/categories`, { operation_area: operationArea });
+  }
+
+  getProServices(proId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/pro-catalog/${proId}/services`);
+  }
+
+  createProService(proId: number, data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/pro-catalog/${proId}/services`, data);
+  }
+
+  updateProService(proId: number, serviceId: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/pro-catalog/${proId}/services/${serviceId}`, data);
+  }
+
+  deleteProService(proId: number, serviceId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/pro-catalog/${proId}/services/${serviceId}`);
+  }
+
+  getProProducts(proId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/pro-catalog/${proId}/products`);
+  }
+
+  createProProduct(proId: number, data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/pro-catalog/${proId}/products`, data);
+  }
+
+  updateProProduct(proId: number, productId: number, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/pro-catalog/${proId}/products/${productId}`, data);
+  }
+
+  deleteProProduct(proId: number, productId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/pro-catalog/${proId}/products/${productId}`);
+  }
+
+  seedProDefaults(proId: number, categoryId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/pro-catalog/${proId}/seed`, { categoryId });
+  }
 }
+
 

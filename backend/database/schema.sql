@@ -95,12 +95,45 @@ CREATE TABLE IF NOT EXISTS pro_catalog_items (
   FOREIGN KEY (category_id) REFERENCES service_categories(id)
 );
 
+CREATE TABLE IF NOT EXISTS pro_services (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  professional_id INT UNSIGNED NOT NULL,
+  category_id INT UNSIGNED NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  description TEXT,
+  price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  estimated_time VARCHAR(50) DEFAULT '1 hora',
+  status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (professional_id) REFERENCES users(id),
+  FOREIGN KEY (category_id) REFERENCES service_categories(id)
+);
+
+CREATE TABLE IF NOT EXISTS pro_products (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  professional_id INT UNSIGNED NOT NULL,
+  category_id INT UNSIGNED NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  description TEXT,
+  price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  stock INT NOT NULL DEFAULT 0,
+  brand VARCHAR(100),
+  compatible_model VARCHAR(150),
+  status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (professional_id) REFERENCES users(id),
+  FOREIGN KEY (category_id) REFERENCES service_categories(id)
+);
+
 INSERT IGNORE INTO service_categories (id, name, description, active) VALUES
-(1, 'Celular', 'Serviços de manutenção de celulares.', 1),
-(2, 'Notebook', 'Serviços de manutenção de notebooks.', 1),
-(3, 'Computador', 'Serviços de manutenção de computadores.', 1),
-(4, 'Videogame', 'Serviços para videogames e consoles.', 1),
-(5, 'Móveis', 'Montagem e consertos de móveis.', 1),
-(6, 'TV', 'Instalação e manutenção de televisores.', 1),
-(7, 'Elétrica', 'Serviços elétricos residenciais.', 1),
-(8, 'Hidráulica', 'Serviços hidráulicos residenciais.', 1);
+(1, 'Técnico de celular', 'Serviços e reparos de smartphones e celulares.', 1),
+(2, 'Técnico de computador/notebook', 'Manutenção, formatação e upgrade de computadores e notebooks.', 1),
+(3, 'Técnico de videogame', 'Manutenção, limpeza e consertos de consoles e controles.', 1),
+(4, 'Técnico de televisão', 'Instalação, reparos e suporte em Smart TVs e televisores.', 1),
+(5, 'Montador de móveis', 'Montagem, desmontagem e ajuste de móveis em geral.', 1),
+(6, 'Eletricista', 'Instalação elétrica residencial, reparos e quadros de força.', 1),
+(7, 'Encanador / serviços hidráulicos', 'Reparos hidráulicos, desentupimentos e vazamentos.', 1),
+(8, 'Outras categorias', 'Outros serviços técnicos e manutenção residencial.', 1);
+

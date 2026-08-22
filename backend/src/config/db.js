@@ -70,14 +70,28 @@ const inMemoryStore = {
     }
   ],
   categories: [
-    { id: 1, name: 'Celular', description: 'Serviços de manutenção de celulares.', active: 1 },
-    { id: 2, name: 'Notebook', description: 'Serviços de manutenção de notebooks.', active: 1 },
-    { id: 3, name: 'Computador', description: 'Serviços de manutenção de computadores.', active: 1 },
-    { id: 4, name: 'Videogame', description: 'Serviços para videogames e consoles.', active: 1 },
-    { id: 5, name: 'Móveis', description: 'Montagem e consertos de móveis.', active: 1 },
-    { id: 6, name: 'TV', description: 'Instalação e manutenção de televisores.', active: 1 },
-    { id: 7, name: 'Elétrica', description: 'Serviços elétricos residenciais.', active: 1 },
-    { id: 8, name: 'Hidráulica', description: 'Serviços hidráulicos residenciais.', active: 1 }
+    { id: 1, name: 'Técnico de celular', description: 'Serviços de manutenção de celulares.', active: 1 },
+    { id: 2, name: 'Técnico de computador/notebook', description: 'Serviços de manutenção de computadores e notebooks.', active: 1 },
+    { id: 3, name: 'Técnico de videogame', description: 'Serviços para videogames e consoles.', active: 1 },
+    { id: 4, name: 'Técnico de televisão', description: 'Instalação e manutenção de televisores.', active: 1 },
+    { id: 5, name: 'Montador de móveis', description: 'Montagem e consertos de móveis.', active: 1 },
+    { id: 6, name: 'Eletricista', description: 'Serviços elétricos residenciais.', active: 1 },
+    { id: 7, name: 'Encanador / serviços hidráulicos', description: 'Serviços hidráulicos residenciais.', active: 1 },
+    { id: 8, name: 'Outras categorias', description: 'Manutenção e serviços gerais.', active: 1 }
+  ],
+  pro_services: [
+    { id: 1, professional_id: 2, category_id: 1, name: 'Troca de Tela iPhone / Samsung', description: 'Troca de tela frontal completa com display e touch de alta qualidade.', price: 250.00, estimated_time: '1 a 2 horas', status: 'active' },
+    { id: 2, professional_id: 2, category_id: 1, name: 'Troca de Bateria Premium', description: 'Substituição de bateria viciada por nova de alta capacidade e saúde 100%.', price: 150.00, estimated_time: '45 minutos', status: 'active' },
+    { id: 3, professional_id: 2, category_id: 1, name: 'Troca de Conector de Carga', description: 'Reparo ou substituição do conector dock tipo C / Lightning.', price: 120.00, estimated_time: '1 hora', status: 'active' },
+    { id: 4, professional_id: 2, category_id: 2, name: 'Formatação e Instalação Windows 11', description: 'Formatação limpa com backups, atualização de drivers e antivírus.', price: 120.00, estimated_time: '2 horas', status: 'active' },
+    { id: 5, professional_id: 2, category_id: 2, name: 'Limpeza Interna e Troca de Pasta Térmica', description: 'Desmontagem, higienização completa dos coolers e aplicação de pasta térmica de prata.', price: 100.00, estimated_time: '1h 30m', status: 'active' }
+  ],
+  pro_products: [
+    { id: 1, professional_id: 2, category_id: 1, name: 'Tela iPhone 11 / 12 OLED', description: 'Tela frontal OLED de altíssima fidelidade de cores', price: 290.00, stock: 8, brand: 'Apple Compatible', compatible_model: 'iPhone 11 / 12', status: 'active' },
+    { id: 2, professional_id: 2, category_id: 1, name: 'Tela Samsung Galaxy S20 / S21', description: 'Display AMOLED com aro de fixação', price: 340.00, stock: 5, brand: 'Samsung Original', compatible_model: 'Galaxy S20 / S21', status: 'active' },
+    { id: 3, professional_id: 2, category_id: 1, name: 'Bateria Gold iPhone 8/X/11', description: 'Bateria de alta durabilidade com selo de garantia', price: 110.00, stock: 12, brand: 'Gold Battery', compatible_model: 'iPhone 8/X/11', status: 'active' },
+    { id: 4, professional_id: 2, category_id: 1, name: 'Conector de Carga Tipo-C Universal', description: 'Módulo de carga rápida tipo C', price: 45.00, stock: 20, brand: 'Foxconn', compatible_model: 'Smartphones Android', status: 'active' },
+    { id: 5, professional_id: 2, category_id: 2, name: 'SSD NVMe 512GB Kingston', description: 'SSD leitura 3500MB/s para inicialização ultra-rápida', price: 260.00, stock: 6, brand: 'Kingston', compatible_model: 'Notebooks e PCs M.2', status: 'active' }
   ],
   requests: [
     {
@@ -367,6 +381,151 @@ const executeInMemory = async (sql, params = []) => {
     return [{ insertId: newId, affectedRows: 1 }, []];
   }
 
+  // PRO SERVICES QUERIES
+  if (query.includes('FROM pro_services')) {
+    let list = inMemoryStore.pro_services || [];
+    if (query.includes('WHERE professional_id = ?')) {
+      const proId = params[0];
+      list = list.filter(s => s.professional_id == proId);
+    }
+    return [list, []];
+  }
+  if (query.includes('INSERT INTO pro_services')) {
+    if (!inMemoryStore.pro_services) inMemoryStore.pro_services = [];
+    const newId = inMemoryStore.pro_services.length + 1;
+    const item = {
+      id: newId,
+      professional_id: params[0],
+      category_id: params[1],
+      name: params[2],
+      description: params[3] || '',
+      price: parseFloat(params[4]) || 0.00,
+      estimated_time: params[5] || '1 hora',
+      status: params[6] || 'active',
+      created_at: new Date().toISOString()
+    };
+    inMemoryStore.pro_services.push(item);
+    saveToDisk();
+    return [{ insertId: newId, affectedRows: 1 }, []];
+  }
+  if (query.includes('UPDATE pro_services SET')) {
+    if (!inMemoryStore.pro_services) inMemoryStore.pro_services = [];
+    const catId = params[0];
+    const name = params[1];
+    const desc = params[2];
+    const price = parseFloat(params[3]);
+    const estTime = params[4];
+    const status = params[5];
+    const id = params[6];
+    const proId = params[7];
+
+    const idx = inMemoryStore.pro_services.findIndex(s => s.id == id && s.professional_id == proId);
+    if (idx !== -1) {
+      inMemoryStore.pro_services[idx] = {
+        ...inMemoryStore.pro_services[idx],
+        category_id: catId,
+        name,
+        description: desc,
+        price,
+        estimated_time: estTime,
+        status
+      };
+      saveToDisk();
+      return [{ affectedRows: 1 }, []];
+    }
+    return [{ affectedRows: 0 }, []];
+  }
+  if (query.includes('DELETE FROM pro_services')) {
+    if (!inMemoryStore.pro_services) inMemoryStore.pro_services = [];
+    const id = params[0];
+    const proId = params[1];
+    const initialLen = inMemoryStore.pro_services.length;
+    inMemoryStore.pro_services = inMemoryStore.pro_services.filter(s => !(s.id == id && s.professional_id == proId));
+    saveToDisk();
+    return [{ affectedRows: initialLen - inMemoryStore.pro_services.length }, []];
+  }
+
+  // PRO PRODUCTS QUERIES
+  if (query.includes('FROM pro_products')) {
+    let list = inMemoryStore.pro_products || [];
+    if (query.includes('WHERE professional_id = ?')) {
+      const proId = params[0];
+      list = list.filter(p => p.professional_id == proId);
+    }
+    return [list, []];
+  }
+  if (query.includes('INSERT INTO pro_products')) {
+    if (!inMemoryStore.pro_products) inMemoryStore.pro_products = [];
+    const newId = inMemoryStore.pro_products.length + 1;
+    const item = {
+      id: newId,
+      professional_id: params[0],
+      category_id: params[1],
+      name: params[2],
+      description: params[3] || '',
+      price: parseFloat(params[4]) || 0.00,
+      stock: parseInt(params[5]) || 0,
+      brand: params[6] || '',
+      compatible_model: params[7] || '',
+      status: params[8] || 'active',
+      created_at: new Date().toISOString()
+    };
+    inMemoryStore.pro_products.push(item);
+    saveToDisk();
+    return [{ insertId: newId, affectedRows: 1 }, []];
+  }
+  if (query.includes('UPDATE pro_products SET')) {
+    if (!inMemoryStore.pro_products) inMemoryStore.pro_products = [];
+    const catId = params[0];
+    const name = params[1];
+    const desc = params[2];
+    const price = parseFloat(params[3]);
+    const stock = parseInt(params[4]);
+    const brand = params[5];
+    const compatibleModel = params[6];
+    const status = params[7];
+    const id = params[8];
+    const proId = params[9];
+
+    const idx = inMemoryStore.pro_products.findIndex(p => p.id == id && p.professional_id == proId);
+    if (idx !== -1) {
+      inMemoryStore.pro_products[idx] = {
+        ...inMemoryStore.pro_products[idx],
+        category_id: catId,
+        name,
+        description: desc,
+        price,
+        stock,
+        brand,
+        compatible_model: compatibleModel,
+        status
+      };
+      saveToDisk();
+      return [{ affectedRows: 1 }, []];
+    }
+    return [{ affectedRows: 0 }, []];
+  }
+  if (query.includes('DELETE FROM pro_products')) {
+    if (!inMemoryStore.pro_products) inMemoryStore.pro_products = [];
+    const id = params[0];
+    const proId = params[1];
+    const initialLen = inMemoryStore.pro_products.length;
+    inMemoryStore.pro_products = inMemoryStore.pro_products.filter(p => !(p.id == id && p.professional_id == proId));
+    saveToDisk();
+    return [{ affectedRows: initialLen - inMemoryStore.pro_products.length }, []];
+  }
+
+  // UPDATE USER OPERATION AREA / CATEGORIES
+  if (query.includes('UPDATE users SET operation_area = ?')) {
+    const user = inMemoryStore.users.find(u => u.id == params[1]);
+    if (user) {
+      user.operation_area = params[0];
+      saveToDisk();
+      return [{ affectedRows: 1 }, []];
+    }
+    return [{ affectedRows: 0 }, []];
+  }
+
   return [[], []];
 };
 
@@ -406,6 +565,42 @@ const initDb = async () => {
         description VARCHAR(255),
         active TINYINT(1) NOT NULL DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS pro_services (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        professional_id INT UNSIGNED NOT NULL,
+        category_id INT UNSIGNED NOT NULL,
+        name VARCHAR(150) NOT NULL,
+        description TEXT,
+        price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        estimated_time VARCHAR(50) DEFAULT '1 hora',
+        status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (professional_id) REFERENCES users(id),
+        FOREIGN KEY (category_id) REFERENCES service_categories(id)
+      );
+    `);
+
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS pro_products (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        professional_id INT UNSIGNED NOT NULL,
+        category_id INT UNSIGNED NOT NULL,
+        name VARCHAR(150) NOT NULL,
+        description TEXT,
+        price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        stock INT NOT NULL DEFAULT 0,
+        brand VARCHAR(100),
+        compatible_model VARCHAR(150),
+        status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (professional_id) REFERENCES users(id),
+        FOREIGN KEY (category_id) REFERENCES service_categories(id)
       );
     `);
 

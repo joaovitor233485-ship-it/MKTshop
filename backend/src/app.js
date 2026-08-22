@@ -7,6 +7,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const proCatalogRoutes = require('./routes/proCatalogRoutes');
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/admin', adminRoutes);
 app.use('/chat', chatRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/reviews', reviewRoutes);
+app.use('/pro-catalog', proCatalogRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ status: 'error', message: 'Rota não encontrada' });

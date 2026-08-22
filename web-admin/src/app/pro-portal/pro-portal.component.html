@@ -1,0 +1,307 @@
+<div class="pro-portal-container">
+  <!-- Top Banner / Seletor de Profissional -->
+  <div class="pro-header-card">
+    <div class="pro-info-main">
+      <div class="pro-avatar">👷</div>
+      <div class="pro-details">
+        <h2>Área Exclusiva do Profissional</h2>
+        <p class="pro-subtitle">Gerencie de forma dinâmica seus serviços prestados, catálogo de peças e preços.</p>
+        <div class="pro-badge-group" *ngIf="selectedPro">
+          <span class="pro-badge">ID #{{ selectedPro.id }}</span>
+          <span class="pro-badge area-badge">📍 {{ selectedPro.operation_area || 'Técnico de Celular & Notebooks' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pro-switcher">
+      <label for="proSelect">Alternar Profissional:</label>
+      <select id="proSelect" class="form-select" [ngModel]="selectedProId" (ngModelChange)="onProChange($event)">
+        <option *ngFor="let pro of professionals" [value]="pro.id">
+          {{ pro.name }} ({{ pro.email }})
+        </option>
+        <option *ngIf="professionals.length === 0" [value]="2">Carlos Técnico (Técnico de Eletrônicos)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Alertas de Feedback -->
+  <div *ngIf="alertMessage" class="alert-banner" [ngClass]="alertMessage.type">
+    <span>{{ alertMessage.type === 'success' ? '✅' : '⚠️' }} {{ alertMessage.text }}</span>
+  </div>
+
+  <!-- Barra de Ações & Navegação por Abas -->
+  <div class="portal-toolbar">
+    <div class="tabs-group">
+      <button class="tab-btn" [class.active]="activeTab === 'services'" (click)="activeTab = 'services'">
+        🛠️ Serviços Cadastrados ({{ services.length }})
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'products'" (click)="activeTab = 'products'">
+        📦 Produtos e Peças ({{ products.length }})
+      </button>
+    </div>
+
+    <div class="toolbar-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Pesquisar por nome, categoria ou marca..." class="search-input" />
+      </div>
+
+      <button *ngIf="activeTab === 'services'" class="btn btn-primary" (click)="openNewServiceModal()">
+        ➕ Novo Serviço
+      </button>
+      <button *ngIf="activeTab === 'products'" class="btn btn-primary" (click)="openNewProductModal()">
+        ➕ Novo Produto/Peça
+      </button>
+      
+      <div class="dropdown-seed">
+        <button class="btn btn-secondary" (click)="seedDefaults(1)">
+          ⚡ Sugestões Rápidas (Seed)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO DA ABA 1: SERVIÇOS -->
+  <div *ngIf="activeTab === 'services'" class="tab-content">
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nome do Serviço</th>
+            <th>Categoria</th>
+            <th>Preço (R$)</th>
+            <th>Tempo Estimado</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filteredServices">
+            <td>#{{ s.id }}</td>
+            <td>
+              <div class="item-name-cell">
+                <strong>{{ s.name }}</strong>
+                <span class="item-desc">{{ s.description }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="category-pill">{{ s.category_name || 'Celulares / Geral' }}</span>
+            </td>
+            <td class="price-cell">R$ {{ s.price | number:'1.2-2' }}</td>
+            <td>⏱️ {{ s.estimated_time || '1 hora' }}</td>
+            <td>
+              <button class="status-badge" [class.active]="s.status === 'active'" (click)="toggleServiceStatus(s)">
+                {{ s.status === 'active' ? 'Ativo' : 'Inativo' }}
+              </button>
+            </td>
+            <td class="actions-cell">
+              <button class="btn-action edit" (click)="openEditServiceModal(s)" title="Editar Serviço">✏️ Editar</button>
+              <button class="btn-action delete" (click)="deleteService(s.id)" title="Excluir Serviço">🗑️ Excluir</button>
+            </td>
+          </tr>
+
+          <tr *ngIf="filteredServices.length === 0">
+            <td colspan="7" class="empty-table">
+              <div class="empty-state">
+                <span class="empty-icon">🛠️</span>
+                <p>Nenhum serviço cadastrado para este profissional.</p>
+                <button class="btn btn-primary" (click)="openNewServiceModal()">Cadastrar Primeiro Serviço</button>
+                <button class="btn btn-secondary ml-2" (click)="seedDefaults(1)">Carregar Sugestões Rápidas</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO DA ABA 2: PRODUTOS E PEÇAS -->
+  <div *ngIf="activeTab === 'products'" class="tab-content">
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nome do Produto / Peça</th>
+            <th>Categoria</th>
+            <th>Marca</th>
+            <th>Modelo Compatível</th>
+            <th>Estoque</th>
+            <th>Preço (R$)</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of filteredProducts">
+            <td>#{{ p.id }}</td>
+            <td>
+              <div class="item-name-cell">
+                <strong>{{ p.name }}</strong>
+                <span class="item-desc">{{ p.description }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="category-pill">{{ p.category_name || 'Peças Eletrônicas' }}</span>
+            </td>
+            <td>{{ p.brand || '—' }}</td>
+            <td>{{ p.compatible_model || '—' }}</td>
+            <td>
+              <span class="stock-badge" [class.low-stock]="p.stock <= 2">
+                {{ p.stock }} un.
+              </span>
+            </td>
+            <td class="price-cell">R$ {{ p.price | number:'1.2-2' }}</td>
+            <td>
+              <button class="status-badge" [class.active]="p.status === 'active'" (click)="toggleProductStatus(p)">
+                {{ p.status === 'active' ? 'Ativo' : 'Inativo' }}
+              </button>
+            </td>
+            <td class="actions-cell">
+              <button class="btn-action edit" (click)="openEditProductModal(p)" title="Editar Produto">✏️ Editar</button>
+              <button class="btn-action delete" (click)="deleteProduct(p.id)" title="Excluir Produto">🗑️ Excluir</button>
+            </td>
+          </tr>
+
+          <tr *ngIf="filteredProducts.length === 0">
+            <td colspan="9" class="empty-table">
+              <div class="empty-state">
+                <span class="empty-icon">📦</span>
+                <p>Nenhuma peça ou produto cadastrado no catálogo.</p>
+                <button class="btn btn-primary" (click)="openNewProductModal()">Cadastrar Primeira Peça</button>
+                <button class="btn btn-secondary ml-2" (click)="seedDefaults(1)">Carregar Peças Sugeridas</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MODAL: CADASTRAR / EDITAR SERVIÇO -->
+  <div *ngIf="showServiceModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ editingService ? 'Editar Serviço' : 'Cadastrar Novo Serviço' }}</h3>
+        <button class="close-btn" (click)="closeServiceModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nome do Serviço *</label>
+          <input type="text" [(ngModel)]="serviceForm.name" placeholder="Ex: Troca de tela, Formatação, Instalação de tomada" class="form-control" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col">
+            <label>Categoria de Atuação *</label>
+            <select [(ngModel)]="serviceForm.category_id" class="form-control">
+              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-group col">
+            <label>Preço do Serviço (R$) *</label>
+            <input type="number" [(ngModel)]="serviceForm.price" placeholder="250.00" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col">
+            <label>Tempo Estimado de Realização</label>
+            <input type="text" [(ngModel)]="serviceForm.estimated_time" placeholder="Ex: 45 min, 1 a 2 horas" class="form-control" />
+          </div>
+
+          <div class="form-group col">
+            <label>Status do Serviço</label>
+            <select [(ngModel)]="serviceForm.status" class="form-control">
+              <option value="active">Ativo (Visível para Clientes)</option>
+              <option value="inactive">Inativo (Pausado)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Descrição Detalhada do Serviço</label>
+          <textarea [(ngModel)]="serviceForm.description" rows="3" placeholder="Descreva o que está incluso no serviço..." class="form-control"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeServiceModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveService()">
+          {{ editingService ? 'Salvar Alterações' : 'Cadastrar Serviço' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CADASTRAR / EDITAR PRODUTO OU PEÇA -->
+  <div *ngIf="showProductModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ editingProduct ? 'Editar Produto/Peça' : 'Cadastrar Produto ou Peça' }}</h3>
+        <button class="close-btn" (click)="closeProductModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nome do Produto / Componente *</label>
+          <input type="text" [(ngModel)]="productForm.name" placeholder="Ex: Tela de iPhone 11, Bateria Samsung, SSD 512GB" class="form-control" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col">
+            <label>Categoria *</label>
+            <select [(ngModel)]="productForm.category_id" class="form-control">
+              <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-group col">
+            <label>Preço de Venda / Peça (R$) *</label>
+            <input type="number" [(ngModel)]="productForm.price" placeholder="150.00" class="form-control" />
+          </div>
+
+          <div class="form-group col">
+            <label>Estoque Atual *</label>
+            <input type="number" [(ngModel)]="productForm.stock" placeholder="10" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col">
+            <label>Marca do Fabricante</label>
+            <input type="text" [(ngModel)]="productForm.brand" placeholder="Ex: Samsung, Apple, Kingston, Steck" class="form-control" />
+          </div>
+
+          <div class="form-group col">
+            <label>Modelo Compatível</label>
+            <input type="text" [(ngModel)]="productForm.compatible_model" placeholder="Ex: iPhone 11 / 12, Galaxy A52" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Status do Produto</label>
+          <select [(ngModel)]="productForm.status" class="form-control">
+            <option value="active">Ativo (Disponível no estoque)</option>
+            <option value="inactive">Inativo (Indisponível)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Descrição do Produto / Peça</label>
+          <textarea [(ngModel)]="productForm.description" rows="3" placeholder="Especificações técnicas, garantia..." class="form-control"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeProductModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveProduct()">
+          {{ editingProduct ? 'Salvar Alterações' : 'Cadastrar Produto' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

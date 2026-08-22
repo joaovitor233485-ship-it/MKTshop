@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'login_screen.dart';
 import 'chat_screen.dart';
+import 'pro_catalog_screen.dart';
 
 class ProDashboardScreen extends StatefulWidget {
   const ProDashboardScreen({super.key});
@@ -334,6 +335,13 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
           backgroundColor: const Color(0xFF1E1B4B),
           foregroundColor: Colors.white,
           actions: [
+            IconButton(
+              icon: const Icon(Icons.storefront, color: Colors.amber),
+              tooltip: 'Meu Catálogo & Serviços',
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ProCatalogScreen()));
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () {
