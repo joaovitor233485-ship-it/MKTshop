@@ -53,7 +53,7 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       await _loadMessages();
     } catch (e) {
-      print('Erro ao enviar mensagem: $e');
+      debugPrint('Erro ao enviar mensagem: $e');
     }
   }
 
@@ -75,7 +75,7 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       await _loadMessages();
     } catch (e) {
-      print('Erro ao compartilhar localização: $e');
+      debugPrint('Erro ao compartilhar localização: $e');
     }
   }
 
