@@ -140,7 +140,7 @@ const acceptRequest = async (req, res) => {
     }
 
     const [result] = await pool.execute(
-      "UPDATE service_requests SET professional_id = ?, status = 'assigned' WHERE id = ? AND status = 'pending'",
+      "UPDATE service_requests SET professional_id = ?, status = 'assigned' WHERE id = ? AND status IN ('pending', 'awaiting_payment_confirmation')",
       [professional_id, requestId]
     );
 

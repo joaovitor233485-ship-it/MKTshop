@@ -237,10 +237,10 @@ const executeInMemory = async (sql, params = []) => {
     return [{ insertId: newId, affectedRows: 1 }, []];
   }
 
-  if (query.includes("UPDATE service_requests SET professional_id = ?, status = 'assigned' WHERE id = ? AND status = 'pending'")) {
+  if (query.includes("UPDATE service_requests SET professional_id = ?, status = 'assigned'")) {
     const proId = params[0];
     const reqId = params[1];
-    const req = inMemoryStore.requests.find(r => r.id == reqId && r.status === 'pending');
+    const req = inMemoryStore.requests.find(r => r.id == reqId && (r.status === 'pending' || r.status === 'awaiting_payment_confirmation'));
     if (req) {
       req.professional_id = proId;
       req.status = 'assigned';

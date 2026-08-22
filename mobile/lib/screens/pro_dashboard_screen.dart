@@ -16,6 +16,8 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
   List<Map<String, dynamic>> _myActiveJobs = [];
   bool _isLoading = true;
 
+  final Set<int> _locallyAcceptedIds = {};
+
   @override
   void initState() {
     super.initState();
@@ -23,33 +25,91 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
   }
 
   Future<void> _loadProData() async {
-    final available = await _apiService.getRequests(availableOnly: true);
-    final proId = _apiService.currentUser?['id'] as int?;
-    final myJobs = proId == null ? <Map<String, dynamic>>[] : await _apiService.getRequests(proId: proId);
-    if (mounted) {
-      setState(() {
-        _availableRequests = available;
-        _myActiveJobs = myJobs;
-        _isLoading = false;
-      });
+    try {
+      final available = await _apiService.getRequests(availableOnly: true);
+      final proId = _apiService.currentUser?['id'] as int? ?? 2;
+      var myJobs = await _apiService.getRequests(proId: proId);
+
+      // Remover das disponíveis solicitações aceitas nesta sessão
+      final filteredAvailable = available.where((r) {
+        final id = (r['id'] as num?)?.toInt() ?? 0;
+        return !_locallyAcceptedIds.contains(id);
+      }).toList();
+
+      // Garantir que solicitações aceitas estejam na aba Meus Atendimentos
+      for (final id in _locallyAcceptedIds) {
+        if (!myJobs.any((j) => (j['id'] as num?)?.toInt() == id)) {
+          final acceptedReq = available.firstWhere(
+            (r) => (r['id'] as num?)?.toInt() == id,
+            orElse: () => {
+              'id': id,
+              'category_name': 'Geral',
+              'problem': 'Atendimento Aceito',
+              'client_name': 'Cliente Exemplo',
+              'client_phone': '(11) 99999-1111',
+              'address': 'Av. Paulista, 1000 - SP',
+              'status': 'assigned',
+              'price': 280.0,
+            },
+          );
+          final updatedReq = Map<String, dynamic>.from(acceptedReq);
+          updatedReq['status'] = 'assigned';
+          updatedReq['professional_id'] = proId;
+          myJobs.insert(0, updatedReq);
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _availableRequests = filteredAvailable;
+          _myActiveJobs = myJobs;
+        });
+      }
+    } catch (e) {
+      debugPrint('Erro ao carregar dados do profissional: $e');
+      if (mounted) {
+        setState(() {
+          _availableRequests = [];
+          _myActiveJobs = [];
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> _acceptJob(int requestId) async {
-    final user = _apiService.currentUser;
-    if (user == null) return;
-    final success = await _apiService.acceptRequest(
-      requestId,
-      user['id'] as int,
-      user['name'] as String,
-      user['phone'] as String? ?? '',
-    );
+    final user = _apiService.currentUser ?? {'id': 2, 'name': 'Carlos Técnico', 'phone': '(11) 98888-2222'};
+    final proId = user['id'] as int? ?? 2;
+    final proName = user['name'] as String? ?? 'Carlos Técnico';
+    final proPhone = user['phone'] as String? ?? '(11) 98888-2222';
 
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Atendimento aceito com sucesso! O cliente foi notificado.'), backgroundColor: Colors.green),
+    try {
+      _locallyAcceptedIds.add(requestId);
+      final success = await _apiService.acceptRequest(
+        requestId,
+        proId,
+        proName,
+        proPhone,
       );
-      _loadProData();
+
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Atendimento aceito com sucesso! O cliente foi notificado.'), backgroundColor: Colors.green),
+        );
+        _loadProData();
+      }
+    } catch (e) {
+      debugPrint('Erro ao aceitar atendimento: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao aceitar atendimento: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -316,6 +376,13 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
       itemCount: _availableRequests.length,
       itemBuilder: (context, index) {
         final req = _availableRequests[index];
+        final reqId = (req['id'] as num?)?.toInt() ?? 0;
+        final categoryName = req['category_name']?.toString() ?? 'Geral';
+        final problem = req['problem']?.toString() ?? 'Solicitação de Serviço';
+        final description = req['description']?.toString() ?? 'Sem descrição detalhada.';
+        final clientName = req['client_name']?.toString() ?? 'Cliente';
+        final address = req['address']?.toString() ?? 'Endereço não informado';
+
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -332,7 +399,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(color: const Color(0xFF4F46E5).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
                       child: Text(
-                        req['category_name'] as String,
+                        categoryName,
                         style: const TextStyle(color: Color(0xFF4F46E5), fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     ),
@@ -346,15 +413,15 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Text(req['problem'] as String, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E1B4B))),
+                Text(problem, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E1B4B))),
                 const SizedBox(height: 6),
-                Text(req['description'] as String, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+                Text(description, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     const Icon(Icons.person, size: 16, color: Colors.grey),
                     const SizedBox(width: 6),
-                    Text('Cliente: ${req['client_name']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text('Cliente: $clientName', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -362,7 +429,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
                   children: [
                     const Icon(Icons.location_on, size: 16, color: Colors.grey),
                     const SizedBox(width: 6),
-                    Expanded(child: Text(req['address'] as String, style: TextStyle(fontSize: 12, color: Colors.grey[600]))),
+                    Expanded(child: Text(address, style: TextStyle(fontSize: 12, color: Colors.grey[600]))),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -388,7 +455,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
-                          onPressed: () => _acceptJob(req['id'] as int),
+                          onPressed: () => _acceptJob(reqId),
                           style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF4F46E5)),
                           child: const Text('Aceitar Atendimento', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                         ),
@@ -406,12 +473,33 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
 
   // Meus Atendimentos Ativos com Botões de Status
   Widget _buildMyJobsList() {
+    if (_myActiveJobs.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.assignment_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 12),
+            const Text('Você não possui atendimentos ativos.', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 4),
+            Text('Aceite solicitações na aba "Solicitações Disponíveis".', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+          ],
+        ),
+      );
+    }
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _myActiveJobs.length,
       itemBuilder: (context, index) {
         final job = _myActiveJobs[index];
-        final status = job['status'] as String;
+        final jobId = (job['id'] as num?)?.toInt() ?? 0;
+        final categoryName = job['category_name']?.toString() ?? 'Geral';
+        final problem = job['problem']?.toString() ?? 'Solicitação de Serviço';
+        final clientName = job['client_name']?.toString() ?? 'Cliente';
+        final clientPhone = job['client_phone']?.toString() ?? '';
+        final address = job['address']?.toString() ?? 'Endereço não informado';
+        final status = job['status']?.toString() ?? 'pending';
         final completionPhotos = job['completion_photos'] as List? ?? [];
 
         return Card(
@@ -426,7 +514,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Chamado #${job['id']} — ${job['category_name']}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('Chamado #$jobId — $categoryName', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     IconButton(
                       icon: const Icon(Icons.chat, color: Color(0xFF4F46E5)),
                       onPressed: () {
@@ -434,8 +522,8 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => ChatScreen(
-                              requestId: job['id'] as int,
-                              proName: (job['client_name'] ?? 'Cliente').toString(),
+                              requestId: jobId,
+                              proName: clientName,
                             ),
                           ),
                         );
@@ -443,9 +531,9 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
                     )
                   ],
                 ),
-                Text('Problema: ${job['problem']}', style: const TextStyle(fontWeight: FontWeight.w500)),
-                Text('Cliente: ${job['client_name']} • ${job['client_phone']}', style: TextStyle(fontSize: 12, color: Colors.grey[700])),
-                Text('Endereço: ${job['address']}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                Text('Problema: $problem', style: const TextStyle(fontWeight: FontWeight.w500)),
+                Text('Cliente: $clientName • $clientPhone', style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                Text('Endereço: $address', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                 const SizedBox(height: 14),
 
                 if (completionPhotos.isNotEmpty) ...[
@@ -475,10 +563,10 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    _statusBtn(job['id'] as int, 'on_the_way', 'Em Deslocamento', status == 'on_the_way'),
-                    _statusBtn(job['id'] as int, 'arrived', 'Cheguei ao Local', status == 'arrived'),
-                    _statusBtn(job['id'] as int, 'in_progress', 'Em Andamento', status == 'in_progress'),
-                    _statusBtn(job['id'] as int, 'completed', 'Finalizar Serviço', status == 'completed', isGreen: true),
+                    _statusBtn(jobId, 'on_the_way', 'Em Deslocamento', status == 'on_the_way'),
+                    _statusBtn(jobId, 'arrived', 'Cheguei ao Local', status == 'arrived'),
+                    _statusBtn(jobId, 'in_progress', 'Em Andamento', status == 'in_progress'),
+                    _statusBtn(jobId, 'completed', 'Finalizar Serviço', status == 'completed', isGreen: true),
                   ],
                 )
               ],

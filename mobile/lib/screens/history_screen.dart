@@ -88,7 +88,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
               itemCount: _requests.length,
               itemBuilder: (context, index) {
                 final req = _requests[index];
-                final status = req['status'] as String;
+                final reqId = (req['id'] as num?)?.toInt() ?? 0;
+                final categoryName = req['category_name']?.toString() ?? 'Geral';
+                final problem = req['problem']?.toString() ?? 'Solicitação de Serviço';
+                final address = req['address']?.toString() ?? 'Endereço não informado';
+                final status = req['status']?.toString() ?? 'pending';
                 final statusColor = _getStatusColor(status);
 
                 return Card(
@@ -104,7 +108,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Chamado #${req['id']} — ${req['category_name']}',
+                              'Chamado #$reqId — $categoryName',
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                             Container(
@@ -121,14 +125,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text('Problema: ${req['problem']}', style: const TextStyle(fontWeight: FontWeight.w500)),
+                        Text('Problema: $problem', style: const TextStyle(fontWeight: FontWeight.w500)),
                         const SizedBox(height: 4),
                         Text(
                           'Profissional: ${req['pro_name'] ?? "Aguardando aceitação"}',
                           style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                         ),
                         const SizedBox(height: 4),
-                        Text('Endereço: ${req['address']}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                        Text('Endereço: $address', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                         const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,

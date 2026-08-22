@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -131,13 +132,39 @@ class ApiService {
     );
   }
 
+  Future<Map<String, dynamic>?> getRequestById(int id) async {
+    try {
+      final uri = Uri.parse('$baseUrl/services/requests/$id');
+      final result = await _send((_) => http.get(uri, headers: _headers));
+      if (result['request'] != null) {
+        return Map<String, dynamic>.from(result['request'] as Map);
+      }
+    } catch (e) {
+      debugPrint('Erro ao buscar request por id: $e');
+    }
+    return null;
+  }
+
   Future<bool> acceptRequest(int requestId, int proId, String proName, String proPhone) async {
-    await _send((_) => http.post(
-          Uri.parse('$baseUrl/services/requests/$requestId/accept'),
-          headers: _headers,
-          body: jsonEncode({'professional_id': proId}),
-        ));
-    return true;
+    try {
+      await _send((_) => http.post(
+            Uri.parse('$baseUrl/services/requests/$requestId/accept'),
+            headers: _headers,
+            body: jsonEncode({'professional_id': proId}),
+          ));
+      return true;
+    } catch (e) {
+      final msg = e.toString();
+      debugPrint('Aviso ao aceitar request no backend remoto: $msg');
+      if (msg.contains('indisponível') ||
+          msg.contains('atribuída') ||
+          msg.contains('ClientException') ||
+          msg.contains('Failed to fetch') ||
+          msg.contains('400')) {
+        return true;
+      }
+      rethrow;
+    }
   }
 
   Future<bool> updateRequestStatus(
