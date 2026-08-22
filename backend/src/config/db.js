@@ -163,6 +163,8 @@ const executeInMemory = async (sql, params = []) => {
   }
   if (query.includes('INSERT INTO users')) {
     const newId = inMemoryStore.users.length + 1;
+    const roleName = params[6] || 'client';
+    const isPro = roleName === 'professional';
     const newUser = {
       id: newId,
       name: params[0],
@@ -171,12 +173,12 @@ const executeInMemory = async (sql, params = []) => {
       phone: params[3],
       password: params[4],
       address: params[5] || '',
-      role: params[6],
-      status: params[7] || 'active',
-      document_id: params[8] || 'Documento em Análise',
-      operation_area: params[9] || 'Manutenção Geral',
-      resume: params[10] || 'Profissional autônomo cadastrado na plataforma.',
-      certifications: params[11] || 'Certificações técnicas pendentes de verificação.',
+      role: roleName,
+      status: params[7] || (isPro ? 'pending' : 'active'),
+      document_id: params[8] || (isPro ? 'Documento em Análise' : ''),
+      operation_area: params[9] || (isPro ? 'Técnico de Celular' : ''),
+      resume: params[10] || (isPro ? 'Profissional autônomo cadastrado na plataforma.' : ''),
+      certifications: params[11] || (isPro ? 'Certificações técnicas pendentes de verificação.' : ''),
       created_at: new Date().toISOString()
     };
     inMemoryStore.users.push(newUser);
@@ -199,7 +201,7 @@ const executeInMemory = async (sql, params = []) => {
     const pros = inMemoryStore.users.filter(u => u.role === 'professional' && u.status === 'pending');
     return [pros, []];
   }
-  if (query.includes('UPDATE users SET status = ? WHERE id = ?')) {
+  if (query.includes('UPDATE users SET status = ?')) {
     const u = inMemoryStore.users.find(user => user.id == params[1]);
     if (u) {
       u.status = params[0];

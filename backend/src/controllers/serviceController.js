@@ -57,8 +57,8 @@ const listRequests = async (req, res) => {
              c.name AS category_name,
              p.name AS pro_name, p.phone AS pro_phone
       FROM service_requests r
-      JOIN users u ON u.id = r.user_id
-      JOIN service_categories c ON c.id = r.category_id
+      LEFT JOIN users u ON u.id = r.user_id
+      LEFT JOIN service_categories c ON c.id = r.category_id
       LEFT JOIN users p ON p.id = r.professional_id
       WHERE 1=1
     `;

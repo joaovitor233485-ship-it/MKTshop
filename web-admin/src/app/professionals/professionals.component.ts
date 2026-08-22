@@ -24,7 +24,7 @@ export class ProfessionalsComponent implements OnInit {
     this.apiService.getProfessionals().subscribe({
       next: (response) => {
         if (response?.users) {
-          this.allProfessionals = response.users.filter((user: any) => user.role === 'professional');
+          this.allProfessionals = response.users.filter((user: any) => user.role?.toLowerCase() === 'professional');
           this.applyFilter(this.currentFilter);
 
           if (this.selectedProfessional) {
@@ -46,7 +46,7 @@ export class ProfessionalsComponent implements OnInit {
     if (filter === 'all') {
       this.filteredProfessionals = this.allProfessionals;
     } else {
-      this.filteredProfessionals = this.allProfessionals.filter(p => p.status === filter);
+      this.filteredProfessionals = this.allProfessionals.filter(p => p.status?.toLowerCase() === filter.toLowerCase());
     }
   }
 

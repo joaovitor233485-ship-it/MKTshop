@@ -4,20 +4,28 @@ const jwt = require('jsonwebtoken');
 
 const registerUser = async (req, res) => {
   try {
-    const { name, cpf, email, phone, password, address, role } = req.body;
+    const { name, cpf, email, phone, password, address, role, document_id, operation_area, resume, certifications } = req.body;
     if (!name || !cpf || !email || !phone || !password || !role) {
       return res.status(400).json({ status: 'error', message: 'Campos obrigatórios ausentes.' });
     }
 
     const [existing] = await pool.execute('SELECT id FROM users WHERE email = ? OR cpf = ?', [email, cpf]);
     if (existing.length > 0) {
-      return res.status(409).json({ status: 'error', message: 'Usuário já existe.' });
+      return res.status(409).json({ status: 'error', message: 'Usuário já existe com este e-mail ou CPF.' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const initialStatus = role === 'professional' ? 'pending' : 'active';
+    const docId = document_id || (role === 'professional' ? 'Documento em Análise' : '');
+    const opArea = operation_area || (role === 'professional' ? 'Técnico de Celular' : '');
+    const resText = resume || (role === 'professional' ? 'Profissional cadastrado na plataforma.' : '');
+    const certText = certifications || (role === 'professional' ? 'Certificação pendente.' : '');
+
     const [result] = await pool.execute(
-      'INSERT INTO users (name, cpf, email, phone, password, address, role, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [name, cpf, email, phone, hashedPassword, address || '', role, role === 'professional' ? 'pending' : 'active']
+      `INSERT INTO users 
+        (name, cpf, email, phone, password, address, role, status, document_id, operation_area, resume, certifications) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [name, cpf, email, phone, hashedPassword, address || '', role, initialStatus, docId, opArea, resText, certText]
     );
 
     res.status(201).json({
