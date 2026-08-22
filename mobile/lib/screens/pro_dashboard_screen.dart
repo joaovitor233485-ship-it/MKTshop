@@ -322,7 +322,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Row(
@@ -337,7 +337,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
           actions: [
             IconButton(
               icon: const Icon(Icons.storefront, color: Colors.amber),
-              tooltip: 'Meu Catálogo & Serviços',
+              tooltip: 'Gerenciar Catálogo completo',
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const ProCatalogScreen()));
               },
@@ -356,6 +356,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
             tabs: [
               Tab(text: 'Solicitações Disponíveis', icon: Icon(Icons.notifications_active)),
               Tab(text: 'Meus Atendimentos', icon: Icon(Icons.assignment_turned_in)),
+              Tab(text: 'Meus Serviços & Catálogo', icon: Icon(Icons.storefront)),
             ],
           ),
         ),
@@ -365,6 +366,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
                 children: [
                   _buildAvailableFeed(),
                   _buildMyJobsList(),
+                  const ProCatalogScreen(isEmbedded: true),
                 ],
               ),
       ),

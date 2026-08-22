@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 
 class ProCatalogScreen extends StatefulWidget {
-  const ProCatalogScreen({super.key});
+  final bool isEmbedded;
+  const ProCatalogScreen({super.key, this.isEmbedded = false});
 
   @override
   State<ProCatalogScreen> createState() => _ProCatalogScreenState();
@@ -21,6 +22,9 @@ class _ProCatalogScreenState extends State<ProCatalogScreen> with SingleTickerPr
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
     _loadCatalog();
   }
 
@@ -93,7 +97,7 @@ class _ProCatalogScreenState extends State<ProCatalogScreen> with SingleTickerPr
                     TextField(
                       controller: priceController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Preço (R$) *', prefixText: 'R\$ '),
+                      decoration: const InputDecoration(labelText: r'Preço (R$) *', prefixText: r'R$ '),
                     ),
                     const SizedBox(height: 10),
                     TextField(
@@ -202,7 +206,7 @@ class _ProCatalogScreenState extends State<ProCatalogScreen> with SingleTickerPr
                           child: TextField(
                             controller: priceController,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(labelText: 'Preço (R$)', prefixText: 'R\$ '),
+                            decoration: const InputDecoration(labelText: r'Preço (R$)', prefixText: r'R$ '),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -284,21 +288,77 @@ class _ProCatalogScreenState extends State<ProCatalogScreen> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    final bodyContent = _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Column(
+            children: [
+              Container(
+                color: const Color(0xFF1E1B4B),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TabBar(
+                        controller: _tabController,
+                        indicatorColor: Colors.amber,
+                        labelColor: Colors.amber,
+                        unselectedLabelColor: Colors.white70,
+                        tabs: const [
+                          Tab(text: 'Serviços Prestados', icon: Icon(Icons.build)),
+                          Tab(text: 'Peças & Estoque', icon: Icon(Icons.inventory_2)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.flash_on, color: Colors.amber),
+                      tooltip: 'Carregar Sugestões Rápidas',
+                      onPressed: () async {
+                        await _apiService.seedProDefaults(_proId, 1);
+                        _loadCatalog();
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Sugestões de serviços e peças carregadas!'), backgroundColor: Colors.green),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildServicesTab(),
+                    _buildProductsTab(),
+                  ],
+                ),
+              ),
+            ],
+          );
+
+    if (widget.isEmbedded) {
+      return Scaffold(
+        body: bodyContent,
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            if (_tabController.index == 0) {
+              _showServiceDialog();
+            } else {
+              _showProductDialog();
+            }
+          },
+          backgroundColor: const Color(0xFF4F46E5),
+          icon: const Icon(Icons.add, color: Colors.white),
+          label: Text(_tabController.index == 0 ? 'Novo Serviço' : 'Nova Peça', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gerenciar Serviços & Peças'),
         backgroundColor: const Color(0xFF1E1B4B),
         foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.amber,
-          labelColor: Colors.amber,
-          unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(text: 'Serviços Prestados', icon: Icon(Icons.build)),
-            Tab(text: 'Peças & Estoque', icon: Icon(Icons.inventory_2)),
-          ],
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.flash_on, color: Colors.amber),
@@ -315,15 +375,7 @@ class _ProCatalogScreenState extends State<ProCatalogScreen> with SingleTickerPr
           )
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildServicesTab(),
-                _buildProductsTab(),
-              ],
-            ),
+      body: bodyContent,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           if (_tabController.index == 0) {
