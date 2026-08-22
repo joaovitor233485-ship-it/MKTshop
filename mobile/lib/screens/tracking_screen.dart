@@ -278,12 +278,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
               height: 180,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.indigo[900],
+                color: const Color(0xFF1E1B4B),
                 borderRadius: BorderRadius.circular(16),
-                image: const DecorationImage(
-                  image: NetworkImage('https://via.placeholder.com/600x300/1E1B4B/FFFFFF?text=Mapa+GPS+Integrado+-+Técnico+a+1.2+km'),
-                  fit: BoxFit.cover,
-                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.indigo.withOpacity(0.3),
@@ -294,6 +290,29 @@ class _TrackingScreenState extends State<TrackingScreen> {
               ),
               child: Stack(
                 children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFF4F46E5)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.map, color: Colors.amber, size: 36),
+                          SizedBox(width: 10),
+                          Text(
+                            'Mapa GPS Integrado',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
