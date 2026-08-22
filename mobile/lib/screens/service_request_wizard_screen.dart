@@ -126,7 +126,12 @@ class _ServiceRequestWizardScreenState extends State<ServiceRequestWizardScreen>
     }
   }
 
+  bool _isSubmitting = false;
+
   Future<void> _submitRequest() async {
+    if (_isSubmitting) return;
+    _isSubmitting = true;
+
     showDialog(
       context: context,
       barrierDismissible: false,

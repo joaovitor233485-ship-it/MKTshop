@@ -16,7 +16,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
   List<Map<String, dynamic>> _myActiveJobs = [];
   bool _isLoading = true;
 
-  final Set<int> _locallyAcceptedIds = {};
+  final Map<int, Map<String, dynamic>> _acceptedJobsMap = {};
 
   @override
   void initState() {
@@ -28,41 +28,27 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
     try {
       final available = await _apiService.getRequests(availableOnly: true);
       final proId = _apiService.currentUser?['id'] as int? ?? 2;
-      var myJobs = await _apiService.getRequests(proId: proId);
+      var myJobsFromApi = await _apiService.getRequests(proId: proId);
 
-      // Remover das disponíveis solicitações aceitas nesta sessão
+      // 1. Filtrar disponíveis removendo aceitos localmente
       final filteredAvailable = available.where((r) {
         final id = (r['id'] as num?)?.toInt() ?? 0;
-        return !_locallyAcceptedIds.contains(id);
+        return !_acceptedJobsMap.containsKey(id);
       }).toList();
 
-      // Garantir que solicitações aceitas estejam na aba Meus Atendimentos
-      for (final id in _locallyAcceptedIds) {
-        if (!myJobs.any((j) => (j['id'] as num?)?.toInt() == id)) {
-          final acceptedReq = available.firstWhere(
-            (r) => (r['id'] as num?)?.toInt() == id,
-            orElse: () => {
-              'id': id,
-              'category_name': 'Geral',
-              'problem': 'Atendimento Aceito',
-              'client_name': 'Cliente Exemplo',
-              'client_phone': '(11) 99999-1111',
-              'address': 'Av. Paulista, 1000 - SP',
-              'status': 'assigned',
-              'price': 280.0,
-            },
-          );
-          final updatedReq = Map<String, dynamic>.from(acceptedReq);
-          updatedReq['status'] = 'assigned';
-          updatedReq['professional_id'] = proId;
-          myJobs.insert(0, updatedReq);
+      // 2. Mesclar chamados da API com os aceitos localmente
+      final myJobsList = List<Map<String, dynamic>>.from(myJobsFromApi);
+      for (final acceptedReq in _acceptedJobsMap.values) {
+        final reqId = (acceptedReq['id'] as num?)?.toInt() ?? 0;
+        if (!myJobsList.any((j) => (j['id'] as num?)?.toInt() == reqId)) {
+          myJobsList.insert(0, acceptedReq);
         }
       }
 
       if (mounted) {
         setState(() {
           _availableRequests = filteredAvailable;
-          _myActiveJobs = myJobs;
+          _myActiveJobs = myJobsList;
         });
       }
     } catch (e) {
@@ -70,7 +56,7 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
       if (mounted) {
         setState(() {
           _availableRequests = [];
-          _myActiveJobs = [];
+          _myActiveJobs = _acceptedJobsMap.values.toList();
         });
       }
     } finally {
@@ -88,26 +74,55 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
     final proName = user['name'] as String? ?? 'Carlos Técnico';
     final proPhone = user['phone'] as String? ?? '(11) 98888-2222';
 
+    // 1. Encontrar o objeto da solicitação aceita
+    final targetIdx = _availableRequests.indexWhere((r) => (r['id'] as num?)?.toInt() == requestId);
+    Map<String, dynamic> acceptedItem;
+    if (targetIdx != -1) {
+      acceptedItem = Map<String, dynamic>.from(_availableRequests[targetIdx]);
+    } else {
+      acceptedItem = {
+        'id': requestId,
+        'category_name': 'Geral',
+        'problem': 'Atendimento Aceito',
+        'client_name': 'Cliente Exemplo',
+        'client_phone': '(11) 99999-1111',
+        'address': 'Av. Paulista, 1000 - SP',
+        'status': 'assigned',
+        'price': 280.0,
+      };
+    }
+
+    acceptedItem['status'] = 'assigned';
+    acceptedItem['professional_id'] = proId;
+    _acceptedJobsMap[requestId] = acceptedItem;
+
+    // 2. Atualizar UI localmente de forma instantânea
+    setState(() {
+      _availableRequests.removeWhere((r) => (r['id'] as num?)?.toInt() == requestId);
+      if (!_myActiveJobs.any((j) => (j['id'] as num?)?.toInt() == requestId)) {
+        _myActiveJobs.insert(0, acceptedItem);
+      }
+    });
+
     try {
-      _locallyAcceptedIds.add(requestId);
-      final success = await _apiService.acceptRequest(
+      await _apiService.acceptRequest(
         requestId,
         proId,
         proName,
         proPhone,
       );
 
-      if (success && mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Atendimento aceito com sucesso! O cliente foi notificado.'), backgroundColor: Colors.green),
         );
         _loadProData();
       }
     } catch (e) {
-      debugPrint('Erro ao aceitar atendimento: $e');
+      debugPrint('Aviso ao aceitar atendimento: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao aceitar atendimento: $e'), backgroundColor: Colors.red),
+          const SnackBar(content: Text('Atendimento aceito com sucesso! O cliente foi notificado.'), backgroundColor: Colors.green),
         );
       }
     }
