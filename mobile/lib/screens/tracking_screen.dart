@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import 'chat_screen.dart';
+import 'home_screen.dart';
 import 'payment_screen.dart';
 import 'review_screen.dart';
 
@@ -138,9 +139,14 @@ class _TrackingScreenState extends State<TrackingScreen> {
       );
     }
 
-    final currentStatus = _requestData?['status'] ?? 'in_progress';
+    final currentStatus = _requestData?['status'] ?? 'pending';
     final currentStageIdx = _getCurrentStageIndex(currentStatus);
-    final proName = _requestData?['pro_name'] ?? 'Marcos Silva (Técnica Móvel)';
+    final hasPro = currentStatus != 'pending' && _requestData?['professional_id'] != null;
+    final proName = _requestData?['pro_name'] ?? 'Carlos Técnico';
+    final categoryName = _requestData?['category_name'] ?? 'Geral';
+    final problem = _requestData?['problem'] ?? 'Solicitação de Serviço';
+    final address = _requestData?['address'] ?? 'Endereço informado';
+    final isCompleted = currentStatus == 'completed';
 
     return Scaffold(
       appBar: AppBar(
@@ -211,11 +217,6 @@ class _TrackingScreenState extends State<TrackingScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Assim que o Administrador confirmar o valor no painel, o seu chamado será liberado imediatamente aos profissionais próximos!',
-                        style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: Color(0xFF92400E)),
-                      ),
                     ],
                   ),
                 ),
@@ -223,129 +224,174 @@ class _TrackingScreenState extends State<TrackingScreen> {
               const SizedBox(height: 16),
             ],
 
-            // Professional Badge Card
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 28,
-                      backgroundColor: Color(0xFF4F46E5),
-                      child: Text('M', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+            // Professional Badge Card ou Searching Status Clean Card
+            if (hasPro) ...[
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 28,
+                        backgroundColor: Color(0xFF4F46E5),
+                        child: Text('T', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(proName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            const SizedBox(height: 2),
+                            Text('Técnico Especialista • R\$ 280,00', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: const [
+                                Icon(Icons.star, color: Colors.amber, size: 16),
+                                SizedBox(width: 4),
+                                Text('4.9 (128 avaliações)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF4F46E5), size: 28),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatScreen(requestId: widget.requestId, proName: proName),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ] else ...[
+              Card(
+                elevation: 3,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Text(proName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                          const SizedBox(height: 2),
-                          Text('Técnico Especialista • R\$ 280,00', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: const [
-                              Icon(Icons.star, color: Colors.amber, size: 16),
-                              SizedBox(width: 4),
-                              Text('4.9 (128 avaliações)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            ],
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4F46E5).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.radar, color: Color(0xFF4F46E5), size: 28),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text('Aguardando Profissional', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Color(0xFF1E1B4B))),
+                                SizedBox(height: 2),
+                                Text('Sua solicitação está visível aos técnicos próximos.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF4F46E5), size: 28),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ChatScreen(requestId: widget.requestId, proName: proName),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                      const SizedBox(height: 14),
+                      const Divider(),
+                      const SizedBox(height: 8),
+                      Text('Categoria: $categoryName', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      Text('Problema: $problem', style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+                      Text('Local: $address', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
 
             const SizedBox(height: 20),
 
-            // Mock Interactive Map Component
-            Container(
-              height: 180,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E1B4B),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.indigo.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  )
-                ],
-              ),
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFF4F46E5)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+            // Mock Interactive Map Component (Visível apenas após profissional aceitar)
+            if (hasPro) ...[
+              Container(
+                height: 180,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E1B4B),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.indigo.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    )
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFF4F46E5)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                       ),
-                    ),
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.map, color: Colors.amber, size: 36),
-                          SizedBox(width: 10),
-                          Text(
-                            'Mapa GPS Integrado',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      gradient: LinearGradient(
-                        colors: [Colors.black.withOpacity(0.6), Colors.transparent],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 12,
-                    left: 16,
-                    right: 16,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Row(
-                          children: [
-                            Icon(Icons.directions_car, color: Colors.amber, size: 20),
-                            SizedBox(width: 6),
-                            Text('Tempo estimado: 8 min', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.map, color: Colors.amber, size: 36),
+                            SizedBox(width: 10),
+                            Text(
+                              'Mapa GPS Integrado',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
                           ],
                         ),
-                        Text('Distância: 1.2 km', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                      ],
+                      ),
                     ),
-                  )
-                ],
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 12,
+                      left: 16,
+                      right: 16,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: const [
+                          Row(
+                            children: [
+                              Icon(Icons.directions_car, color: Colors.amber, size: 20),
+                              SizedBox(width: 6),
+                              Text('Tempo estimado: 8 min', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          Text('Distância: 1.2 km', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
-            ),
-
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
+            ],
 
             const Text(
               'Estágio do Atendimento',
@@ -492,17 +538,16 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      Navigator.push(
+                      Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => PaymentScreen(requestId: widget.requestId, amount: 280.00),
-                        ),
+                        MaterialPageRoute(builder: (context) => const HomeScreen()),
+                        (route) => false,
                       );
                     },
-                    icon: const Icon(Icons.payment, color: Colors.white),
-                    label: const Text('Pagar R\$ 280', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                    icon: const Icon(Icons.home, color: Colors.white),
+                    label: const Text('Voltar para a Tela Inicial', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[700],
+                      backgroundColor: const Color(0xFF4F46E5),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -511,19 +556,32 @@ class _TrackingScreenState extends State<TrackingScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ReviewScreen(requestId: widget.requestId, proId: 2, proName: proName),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.star, color: Colors.amber),
-                    label: const Text('Avaliar'),
+                    onPressed: isCompleted
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ReviewScreen(requestId: widget.requestId, proId: 2, proName: proName),
+                              ),
+                            );
+                          }
+                        : () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('A avaliação só pode ser feita após o profissional finalizar o serviço.'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                          },
+                    icon: Icon(Icons.star, color: isCompleted ? Colors.amber : Colors.grey),
+                    label: Text(
+                      'Avaliar',
+                      style: TextStyle(color: isCompleted ? const Color(0xFF4F46E5) : Colors.grey),
+                    ),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      side: BorderSide(color: isCompleted ? const Color(0xFF4F46E5) : Colors.grey[300]!),
                     ),
                   ),
                 ),
